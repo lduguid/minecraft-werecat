@@ -10,15 +10,15 @@ Each film is about one and a half to two minutes long. Everything you see and he
 
 ## Watch it
 
-1. Download or clone this repository.
-2. Open `index.html` and start with **The Werecat**. Each end screen links to the next film, and every title and end screen lists all three. Use a browser with WebGL and Web Audio, such as current Chrome, Edge, or Firefox.
+1. Watch online at [lduguid.github.io/minecraft-werecat](https://lduguid.github.io/minecraft-werecat/), or download or clone this repository and open `index.html`.
+2. Start with **The Werecat**. Each end screen links to the next film, and every title and end screen lists all three. Use a browser with WebGL and Web Audio, such as current Chrome, Edge, or Firefox.
    - Watching The Werecat first keeps its mystery intact. Seeing Grandpa's House second lets you spot the clues, and it introduces the witch just before the finale.
    - The films also work in story order: Grandpa's House, then The Werecat, then The Last Full Moon.
 3. Turn your sound on and click **Play**. Browsers only allow audio after a click.
 
 You need an internet connection, because Three.js and the fonts load from public CDNs.
 
-If your browser refuses to run the pages straight from disk, serve the folder locally and open `http://localhost:8000`:
+If your browser refuses to run a downloaded copy straight from disk, watch the [online version](https://lduguid.github.io/minecraft-werecat/) instead, or serve the folder locally and open `http://localhost:8000`:
 
 ```bash
 py -m http.server 8000        # Windows
