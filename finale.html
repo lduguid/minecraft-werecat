@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Grandpa's House - a Halloween prequel to The Werecat</title>
+  <title>The Last Full Moon - the final chapter of The Werecat</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/halloween.css">
+  <link rel="stylesheet" href="css/finale.css">
 </head>
-<body class="halloween">
+<body class="finale">
   <div id="stage">
     <canvas id="view"></canvas>
   </div>
 
   <div id="vignette"></div>
-  <div id="flashback-frame"><span></span></div>
+  <div id="flashback-frame"><span>LONG AGO...</span></div>
   <div id="flash"></div>
   <div id="fade"></div>
   <div class="bar top"></div>
@@ -33,32 +33,32 @@
 
   <div id="title" class="screen">
     <div class="logo-wrap">
-      <h1 class="logo">GRANDPA'S HOUSE</h1>
-      <div class="splash">Trick or treat!</div>
+      <h1 class="logo">THE LAST FULL MOON</h1>
+      <div class="splash">The final chapter!</div>
     </div>
-    <p class="tagline">A Halloween prequel to The Werecat.</p>
+    <p class="tagline">The end of The Werecat story.</p>
     <button id="btn-play" class="mc-btn" disabled>Loading world...</button>
     <p class="hint">Turn your sound on. &nbsp; Space = pause &nbsp; M = mute &nbsp; R = restart</p>
     <nav class="trilogy" aria-label="The Werecat trilogy">
       <span>Watch in order:</span>
       <a href="index.html">1. The Werecat</a>
-      <span class="current">2. Grandpa's House</span>
-      <a href="finale.html">3. The Last Full Moon</a>
+      <a href="halloween.html">2. Grandpa's House</a>
+      <span class="current">3. The Last Full Moon</span>
     </nav>
   </div>
 
   <div id="end" class="screen hidden">
-    <p class="tagline">The story ends in...</p>
-    <h2 class="logo small">THE LAST FULL MOON</h2>
+    <h2 class="logo small">THE END</h2>
+    <p class="tagline">Thanks for watching the Werecat trilogy.</p>
     <div class="end-buttons">
-      <a class="mc-btn" href="finale.html">Next: The Last Full Moon</a>
+      <a class="mc-btn" href="index.html">Watch from the beginning</a>
       <button id="btn-replay" class="mc-btn">Watch again</button>
     </div>
     <nav class="trilogy" aria-label="The Werecat trilogy">
       <span>Watch in order:</span>
       <a href="index.html">1. The Werecat</a>
-      <span class="current">2. Grandpa's House</span>
-      <a href="finale.html">3. The Last Full Moon</a>
+      <a href="halloween.html">2. Grandpa's House</a>
+      <span class="current">3. The Last Full Moon</span>
     </nav>
   </div>
 
@@ -83,8 +83,11 @@
   <script src="js/halloween/world.js"></script>
   <script src="js/halloween/props.js"></script>
   <script src="js/halloween/audio.js"></script>
-  <script src="js/halloween/atmosphere.js"></script>
-  <script src="js/halloween/story.js"></script>
-  <script src="js/halloween/main.js"></script>
+  <script src="js/finale/world.js"></script>
+  <script src="js/finale/props.js"></script>
+  <script src="js/finale/audio.js"></script>
+  <script src="js/finale/daybreak.js"></script>
+  <script src="js/finale/story.js"></script>
+  <script src="js/finale/main.js"></script>
 </body>
 </html>

@@ -226,4 +226,34 @@ body.cinema .bar { transform: translateY(0); }
 
 .mc-btn.small { font-size: 15px; min-width: 0; padding: 5px 12px; border-width: 2px; }
 
+a.mc-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+.end-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* Watch-order links shared by the three films */
+.trilogy {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 15px;
+  color: #aaa;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.trilogy a { color: #ddd; text-decoration: none; border-bottom: 1px dotted #888; }
+.trilogy a:hover { color: #ffffa0; border-bottom-color: #ffffa0; }
+.trilogy .current { color: #ffe066; }
+
 #error { color: #ff8080; font-size: 20px; }

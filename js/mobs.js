@@ -84,6 +84,11 @@
       let hy = a.headYaw, hp = a.headPitch;
       if (a.mode === 'panic') { hy = Math.sin(t * 9) * 0.9; hp = -0.1; }
       if (a.mode === 'pick') hp = 0.6;
+      if (a.mode === 'sit' || a.mode === 'sitUp') {
+        legL.rotation.x = legR.rotation.x = -1.45;
+        a.rig.position.y -= 0.34;
+        if (a.mode === 'sit') hp = 0.32 + Math.sin(t * 0.9) * 0.07;
+      }
       head.rotation.y = hy;
       head.rotation.x = hp;
       head.rotation.z = a.mode === 'confused' ? Math.sin(t * 2) * 0.25 : 0;

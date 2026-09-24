@@ -228,12 +228,17 @@ window.WC = window.WC || {};
     return Object.assign(out, { COT, CH, FENCE, PATH, EYES, EYE_CAM, edgeZ });
   }
 
-  HW.buildWorld = function (scene) {
+  // more.decorate(tools, out) lets a later story add its own structures to this world.
+  HW.buildWorld = function (scene, more) {
     const world = WC.World.build(scene, {
       zMax: Z_MAX,
       height,
       treeOk: (x, z) => z < 44 && pathDist(x, z) > 4,
-      decorate,
+      decorate: (t) => {
+        const out = decorate(t);
+        if (more && more.decorate) more.decorate(t, out);
+        return out;
+      },
       plant,
       mesher: { canopyShade: 0.42, roofShade: 0.28 },
     });

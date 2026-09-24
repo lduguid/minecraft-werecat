@@ -73,7 +73,10 @@ window.WC = window.WC || {};
   }
 
   // Grandpa's front door: splintered, clawed, and hanging ajar.
-  function clawedDoor() {
+  // opts: { claws, damage, patched }; with no opts it is Grandpa's broken door.
+  function clawedDoor(opts) {
+    opts = opts || {};
+    const claws = opts.claws !== false, damage = opts.damage !== false, patched = !!opts.patched;
     const wood = '#5e4a36';
     const planks = (ctx, w, h) => {
       ctx.fillStyle = WC.Tex.shade(wood, 0.82);
@@ -84,7 +87,7 @@ window.WC = window.WC || {};
     const outside = (ctx, w, h, rand) => {
       planks(ctx, w, h);
       // four deep claw gouges raking diagonally down across the door
-      for (let c = 0; c < 4; c++) {
+      for (let c = 0; c < (claws ? 4 : 0); c++) {
         let x = -1 + c * 3.6, y = 3 + c * 0.8;
         for (let i = 0; i < 17; i++) {
           const px = Math.round(x), py = Math.round(y);
@@ -95,16 +98,26 @@ window.WC = window.WC || {};
         }
       }
       // splintered hole near the bottom and a snagged scrap of green cloth
-      [[11, 26, 4], [12, 27, 4], [13, 28, 3], [12, 29, 3], [14, 25, 2]].forEach(([x, y, n]) => ctx.clearRect(x, y, n, 1));
-      ['#e0c090', '#c8a070'].forEach((c, i) => { WC.Tex.px(ctx, 10, 26 + i, c); WC.Tex.px(ctx, 11, 25 + i, c); WC.Tex.px(ctx, 15, 27 + i, c); });
-      ctx.fillStyle = '#3f6b3a'; ctx.fillRect(8, 22, 3, 4);
-      ctx.fillStyle = '#2f5a2c'; ctx.fillRect(8, 26, 2, 2); WC.Tex.px(ctx, 10, 26, '#2f5a2c');
-      WC.Tex.px(ctx, 9, 21, '#e0c090');
+      if (damage) {
+        [[11, 26, 4], [12, 27, 4], [13, 28, 3], [12, 29, 3], [14, 25, 2]].forEach(([x, y, n]) => ctx.clearRect(x, y, n, 1));
+        ['#e0c090', '#c8a070'].forEach((c, i) => { WC.Tex.px(ctx, 10, 26 + i, c); WC.Tex.px(ctx, 11, 25 + i, c); WC.Tex.px(ctx, 15, 27 + i, c); });
+        ctx.fillStyle = '#3f6b3a'; ctx.fillRect(8, 22, 3, 4);
+        ctx.fillStyle = '#2f5a2c'; ctx.fillRect(8, 26, 2, 2); WC.Tex.px(ctx, 10, 26, '#2f5a2c');
+        WC.Tex.px(ctx, 9, 21, '#e0c090');
+      }
+      // fresh planks nailed over the gouges
+      if (patched) {
+        [[5, 3], [12, 3], [19, 3]].forEach(([y, hh]) => {
+          ctx.fillStyle = '#a8864f'; ctx.fillRect(0, y, w, hh);
+          ctx.fillStyle = '#c8a46a'; ctx.fillRect(0, y, w, 1);
+          WC.Tex.px(ctx, 1, y + 1, '#3a3a3a'); WC.Tex.px(ctx, w - 2, y + 1, '#3a3a3a');
+        });
+      }
       WC.Tex.px(ctx, 13, 12, '#3a3a3a');
     };
     const inside = (ctx, w, h) => {
       planks(ctx, w, h);
-      [[1, 26, 4], [1, 27, 4], [2, 28, 3], [1, 29, 3], [0, 25, 2]].forEach(([x, y, n]) => ctx.clearRect(x, y, n, 1));
+      if (damage) [[1, 26, 4], [1, 27, 4], [2, 28, 3], [1, 29, 3], [0, 25, 2]].forEach(([x, y, n]) => ctx.clearRect(x, y, n, 1));
     };
     const pivotG = new THREE.Group();
     const mesh = skinBox(16, 32, 3, { color: wood, noise: 0.06, alpha: true, back: outside, front: inside }, 777);
@@ -140,15 +153,20 @@ window.WC = window.WC || {};
   }
 
   // ---------------------------------------------------------------- The witch, riding her broom
-  function witch() {
+  // opts: { standing, hood, scale } for the witch on foot, disguised in a cleric's hood.
+  function witch(opts) {
+    opts = opts || {};
+    const standing = !!opts.standing;
     const a = new Actor('witch');
     const r = a.rig;
     const robe = '#4a2466', skin = '#8fae7a';
     const legL = pivot(r, 2, 12, 0), legR = pivot(r, -2, 12, 0);
     put(legL, skinBox(4, 12, 4, { color: '#2a1a34' }), 0, -6, 0);
     put(legR, skinBox(4, 12, 4, { color: '#2a1a34' }), 0, -6, 0);
-    legL.rotation.set(-1.35, 0, 0.25);
-    legR.rotation.set(-1.35, 0, -0.25);
+    if (!standing) {
+      legL.rotation.set(-1.35, 0, 0.25);
+      legR.rotation.set(-1.35, 0, -0.25);
+    }
     const belt = (ctx, w) => { ctx.fillStyle = '#1e1028'; ctx.fillRect(0, 7, w, 1); };
     put(r, skinBox(8, 14, 6, { color: robe, front: belt, back: belt, left: belt, right: belt }), 0, 17, 0);
 
@@ -156,11 +174,11 @@ window.WC = window.WC || {};
     put(cape, skinBox(10, 15, 1, { color: '#1a1020' }), 0, -7.5, 0);
 
     const head = pivot(r, 0, 24, 0);
-    put(head, skinBox(8, 10, 8, {
+    const face = put(head, skinBox(8, 10, 8, {
       color: skin,
       front: pattern(['', '', '', '.dd..dd.', '.pg..gp.', '', '', '', '.kkkkkk.'], { d: '#2a2a1a', p: '#f0f0f0', g: '#7a2a9a', k: '#4a5a3a' }),
     }), 0, 5, 0);
-    put(head, skinBox(2, 5, 2, { color: '#7f9d6a', front: pattern(['', '', '..', '.w'], { w: '#4a5a32' }) }), 0, 3.5, 5);
+    const nose = put(head, skinBox(2, 5, 2, { color: '#7f9d6a', front: pattern(['', '', '..', '.w'], { w: '#4a5a32' }) }), 0, 3.5, 5);
     const hat = pivot(head, 0, 10, 0);
     put(hat, skinBox(14, 1, 14, { color: '#161018' }), 0, 0, 0);
     put(hat, skinBox(8, 3, 8, { color: '#161018', front: (ctx, w) => { ctx.fillStyle = '#3a8a3a'; ctx.fillRect(0, 2, w, 1); WC.Tex.px(ctx, 3, 2, '#e0c040'); WC.Tex.px(ctx, 4, 2, '#e0c040'); } }), 0, 2, 0);
@@ -175,26 +193,65 @@ window.WC = window.WC || {};
     const armL = pivot(r, 5.5, 22, 0), armR = pivot(r, -5.5, 22, 0);
     put(armL, skinBox(3, 11, 3, { color: robe }), 0, -4.5, 0);
     put(armR, skinBox(3, 11, 3, { color: robe }), 0, -4.5, 0);
-    armL.rotation.set(-1.1, 0, -0.3);
-    armR.rotation.set(-1.1, 0, 0.3);
+    if (!standing) {
+      armL.rotation.set(-1.1, 0, -0.3);
+      armR.rotation.set(-1.1, 0, 0.3);
+    }
 
-    const broom = pivot(r, 0, 10.5, 0);
-    put(broom, skinBox(1, 1, 30, { color: '#6b4a2a' }), 0, 0, 3);
-    put(broom, skinBox(5, 5, 7, { color: '#c8a24a', noise: 0.15 }), 0, 0, -14);
-    put(broom, skinBox(3, 3, 3, { color: '#b8923a', noise: 0.15 }), 0, 0, -19);
+    let broom = null;
+    if (!standing) {
+      broom = pivot(r, 0, 10.5, 0);
+      put(broom, skinBox(1, 1, 30, { color: '#6b4a2a' }), 0, 0, 3);
+      put(broom, skinBox(5, 5, 7, { color: '#c8a24a', noise: 0.15 }), 0, 0, -14);
+      put(broom, skinBox(3, 3, 3, { color: '#b8923a', noise: 0.15 }), 0, 0, -19);
+    }
 
-    Object.assign(a.parts, { head, hat, hat2, hat3, tip, cape, broom });
-    a.grounded = false;
+    // The hood comes with a kindly villager face; taking it off reveals the witch's own.
+    let hood = null;
+    if (opts.hood) {
+      hood = pivot(head, 0, 0, 0);
+      const hc = '#5a2e7a';
+      put(hood, skinBox(10, 2, 10, { color: hc }), 0, 10.5, 0);
+      put(hood, skinBox(10, 10, 1, { color: hc }), 0, 5.5, -4.5);
+      put(hood, skinBox(1, 10, 9, { color: hc }), 4.5, 5.5, 0.5);
+      put(hood, skinBox(1, 10, 9, { color: hc }), -4.5, 5.5, 0.5);
+      put(hood, skinBox(8, 10, 8, {
+        color: '#b58a68',
+        front: pattern(['', '', '', '.dddddd.', '.wg..gw.', '', '', '', ''], { d: '#4a3020', w: '#f0f0f0', g: '#3a6a2a' }),
+      }), 0, 5, 0);
+      put(hood, skinBox(2, 4, 2, { color: '#a07858' }), 0, 3, 5);
+    }
+
+    Object.assign(a.parts, { head, hat, hat2, hat3, tip, cape, broom, armL, armR, legL, legR, hood });
+    a.grounded = standing;
     a.idleLook = false;
-    a.root.scale.setScalar(1.4);
+    a.root.scale.setScalar(opts.scale || 1.4);
     a.cackling = false;
+    a.holdUp = false;
+    a.throwT = 0;
+    a.setHood = (on) => {
+      if (hood) hood.visible = on;
+      hat.visible = face.visible = nose.visible = !on;
+    };
+    if (hood) a.setHood(true);
     a.anim = (dt, t) => {
-      a.rig.position.y += Math.sin(t * 2.2) * 0.08;
-      a.rig.rotation.x = Math.sin(t * 1.3) * 0.06;
-      cape.rotation.x = 0.5 + Math.sin(t * 9) * 0.25;
+      if (standing) {
+        WC.Mobs.walkLegs(a, 0.7);
+        armL.rotation.set(-0.35, 0, 0.12);
+        armR.rotation.set(a.holdUp ? -2.7 : -0.35, 0, -0.12);
+        if (a.throwT > 0) {
+          a.throwT -= dt;
+          armR.rotation.set(-2.8 + (1 - Math.max(0, a.throwT) / 0.3) * 2.2, 0, 0);
+        }
+        cape.rotation.x = 0.12 + Math.sin(t * 2) * 0.04;
+      } else {
+        a.rig.position.y += Math.sin(t * 2.2) * 0.08;
+        a.rig.rotation.x = Math.sin(t * 1.3) * 0.06;
+        cape.rotation.x = 0.5 + Math.sin(t * 9) * 0.25;
+      }
       tip.rotation.z = Math.sin(t * 3.1) * 0.25;
       hat3.rotation.z = Math.sin(t * 2.6) * 0.1;
-      head.rotation.x = a.cackling ? -0.35 + Math.sin(t * 18) * 0.12 : -0.05;
+      head.rotation.x = a.cackling ? -0.35 + Math.sin(t * 18) * 0.12 : (standing ? a.headPitch : -0.05);
       head.rotation.y = a.headYaw;
     };
     return a.finish();

@@ -77,11 +77,13 @@
     const eyes = pattern(['', '.g.g.'], { g: eyeColor });
     put(head, skinBox(5, 4, 5, { color: fur, front: (ctx) => { eyes(ctx); }, top: hStripes, glow: { front: eyes } }), 0, 1.5, 2);
     put(head, skinBox(3, 2, 1, { color: opts.muzzle || '#b0a89c', front: pattern(['.p.'], { p: '#e07a8a' }) }), 0, 0.5, 5);
+    const eyeSprites = [];
     if (opts.glowEyes) {
       [-1, 1].forEach((sx) => {
         const e = eyeSprite(eyeColor, 0.13);
         e.position.set(sx * P, 2 * P, 4.7 * P);
         head.add(e);
+        eyeSprites.push(e);
       });
     }
     put(head, skinBox(1, 2, 1, { color: fur }), 1.5, 4, 1.5);
@@ -97,6 +99,7 @@
     Object.assign(a.parts, { head, legs, tail, body });
     a.stride = 6;
     a.sitK = 0;
+    a.setEyes = (v) => eyeSprites.forEach((e) => { e.material.opacity = v; });
     a.anim = (dt, t) => {
       const k = Math.min(1, a.vel * 0.5) * 0.8;
       const s = Math.sin(a.phase) * k;
@@ -134,6 +137,7 @@
     howl: { torso: -0.25, head: -1.05, armX: -0.55, armZ: 0.8, jaw: 0.65, tail: 0.95 },
     run: { torso: 1.35, head: -1.2, armX: -1.3, armZ: 0.05, jaw: 0.3, tail: 0.2 },
     stalk: { torso: 1.0, head: -0.9, armX: -0.95, armZ: 0.1, jaw: 0.1, tail: 0.35 },
+    weak: { torso: 1.15, head: 0.3, armX: -0.25, armZ: 0.12, jaw: 0.05, tail: -0.35 },
   };
 
   function werecat() {
@@ -244,6 +248,7 @@
     a.idleLook = false;
     a.pose = Object.assign({}, POSES.stand);
     a.poseRate = 5;
+    a.swipeT = 0;
     a.setEyes = (v) => eyes.forEach((e) => { e.material.opacity = v; });
     a.snapPose = () => Object.assign(a.pose, POSES[a.mode] || POSES.stand);
 
@@ -261,6 +266,12 @@
       arms[1].rotation.x = p.armX + U.lerp(-armSwing, armSwing, quad);
       arms[0].rotation.z = p.armZ;
       arms[1].rotation.z = -p.armZ;
+      if (a.swipeT > 0) {
+        a.swipeT -= dt;
+        const u = 1 - Math.max(0, a.swipeT) / 0.35;
+        arms[1].rotation.x = -2.9 + u * 2.7;
+        arms[1].rotation.z = -0.35;
+      }
       torso.rotation.x = p.torso + quad * Math.sin(a.phase * 2) * 0.08 * k;
       const howling = a.mode === 'howl';
       head.rotation.x = p.head + a.headPitch * 0.5;

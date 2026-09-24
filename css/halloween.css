@@ -27,16 +27,3 @@ body.halloween .mc-btn:hover:not(:disabled) {
   box-shadow: inset 2px 2px 0 #c9a8ef, inset -2px -3px 0 #3f2266;
   color: #ffd27a;
 }
-
-a.mc-btn {
-  display: inline-block;
-  text-decoration: none;
-  text-align: center;
-}
-
-.end-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 14px;
-}

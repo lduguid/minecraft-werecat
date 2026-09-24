@@ -1,0 +1,26 @@
+/* Moonlit styling for The Last Full Moon, layered on top of style.css. */
+
+body.finale .screen {
+  background: radial-gradient(ellipse at center, rgba(10, 16, 40, 0.3) 0%, rgba(2, 4, 12, 0.82) 100%);
+}
+
+body.finale .logo {
+  font-size: clamp(20px, 4.6vw, 70px);
+  background: linear-gradient(#f4f6ff 0%, #c8d2f0 45%, #8e9cc8 55%, #e8d8a0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 4px 0 #2a3060) drop-shadow(0 4px 0 #0e1030) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.85));
+}
+
+body.finale .splash {
+  color: #ffe066;
+  text-shadow: 2px 2px 0 #4a3a00;
+}
+
+body.finale #caption.scary #caption-text { color: #b8ff7a; }
+
+body.finale .mc-btn:hover:not(:disabled) {
+  background: linear-gradient(#7a8ad0, #56649e);
+  box-shadow: inset 2px 2px 0 #c0caf0, inset -2px -3px 0 #2e3870;
+  color: #ffe066;
+}
