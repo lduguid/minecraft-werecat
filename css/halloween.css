@@ -1,0 +1,42 @@
+/* Halloween styling for Grandpa's House, layered on top of style.css. */
+
+body.halloween #vignette {
+  background: radial-gradient(ellipse at center, rgba(20, 0, 30, 0) 50%, rgba(20, 0, 30, 0.72) 100%);
+}
+
+body.halloween .screen {
+  background: radial-gradient(ellipse at center, rgba(30, 10, 40, 0.3) 0%, rgba(8, 0, 12, 0.82) 100%);
+}
+
+body.halloween .logo {
+  background: linear-gradient(#ffd27a 0%, #ff9a2a 45%, #d9620a 55%, #ff8a1a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 4px 0 #4a1a5a) drop-shadow(0 4px 0 #1a0a20) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.85));
+}
+
+body.halloween .splash {
+  color: #b8ff4a;
+  text-shadow: 2px 2px 0 #1f3a00;
+}
+
+body.halloween #caption.scary #caption-text { color: #ffb04a; }
+
+body.halloween .mc-btn:hover:not(:disabled) {
+  background: linear-gradient(#9a6ac8, #6f45a0);
+  box-shadow: inset 2px 2px 0 #c9a8ef, inset -2px -3px 0 #3f2266;
+  color: #ffd27a;
+}
+
+a.mc-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+.end-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}

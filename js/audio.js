@@ -397,6 +397,8 @@
   const safe = (fn) => (...args) => { if (ctx) fn(...args); };
 
   WC.Audio = {
+    // Low-level synth helpers, for extra sound sets that live in other files.
+    _: { get ctx() { return ctx; }, gain, filter, osc, noise, env, out, ramp, shaperCurve },
     init,
     get ready() { return !!ctx; },
     resume() { if (ctx && ctx.state === 'suspended') ctx.resume(); },

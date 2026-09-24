@@ -1,6 +1,6 @@
 (function () {
   const TILE = 16;
-  const COLS = 8, ROWS = 4;
+  const COLS = 8;
 
   function makeCanvas(w, h) {
     const c = document.createElement('canvas');
@@ -222,6 +222,135 @@
         px(ctx, ox + x + 1, oy + 6, '#b8922a');
       }
     },
+    // ---------- Spooky forest tiles ----------
+    dark_log_side(ctx, ox, oy, rand) {
+      for (let x = 0; x < 16; x++) {
+        const col = pick(rand, ['#3e2e1c', '#33251a', '#46341f', '#2b1f14']);
+        for (let y = 0; y < 16; y++) px(ctx, ox + x, oy + y, rand() < 0.14 ? '#1e150d' : col);
+      }
+    },
+    dark_log_top(ctx, ox, oy, rand) {
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++) {
+          const d = Math.max(Math.abs(x - 7.5), Math.abs(y - 7.5));
+          const c = d > 6.5 ? pick(rand, ['#33251a', '#3e2e1c']) : (Math.floor(d) % 2 === 0 ? '#6b5334' : '#58432a');
+          px(ctx, ox + x, oy + y, c);
+        }
+    },
+    dark_leaves(ctx, ox, oy, rand) {
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++) {
+          if (rand() < 0.14) continue;
+          px(ctx, ox + x, oy + y, pick(rand, ['#24401a', '#2d4d1f', '#1c3314', '#335a24', '#203a17']));
+        }
+    },
+    spruce_log_side(ctx, ox, oy, rand) {
+      for (let x = 0; x < 16; x++) {
+        const col = pick(rand, ['#3b2a18', '#4a3520', '#30220f', '#422f1b']);
+        for (let y = 0; y < 16; y++) px(ctx, ox + x, oy + y, rand() < 0.1 ? '#22170b' : col);
+      }
+    },
+    spruce_leaves(ctx, ox, oy, rand) {
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++) {
+          if (rand() < 0.12) continue;
+          px(ctx, ox + x, oy + y, pick(rand, ['#2f4f3a', '#28453a', '#365a44', '#223c30']));
+        }
+    },
+    podzol_top(ctx, ox, oy, rand) {
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++)
+          px(ctx, ox + x, oy + y, rand() < 0.06 ? '#8a6a3a' : pick(rand, ['#6b4a2a', '#5e4024', '#7d5a33', '#4a3219']));
+    },
+    podzol_side(ctx, ox, oy, rand) {
+      painters.dirt(ctx, ox, oy, rand);
+      for (let x = 0; x < 16; x++) {
+        const depth = 2 + ((rand() * 2) | 0);
+        for (let y = 0; y < depth; y++) px(ctx, ox + x, oy + y, pick(rand, ['#6b4a2a', '#5e4024', '#7d5a33']));
+      }
+    },
+    mossy_cobble(ctx, ox, oy, rand) {
+      painters.cobble(ctx, ox, oy, rand);
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++)
+          if (rand() < 0.3) px(ctx, ox + x, oy + y, pick(rand, ['#4a6b32', '#5a7a3a', '#3f5a2a']));
+    },
+    window_dark(ctx, ox, oy, rand) {
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++)
+          px(ctx, ox + x, oy + y, (x + y) % 11 === 0 ? '#343c4a' : pick(rand, ['#14171e', '#1a1e26', '#101318']));
+      ctx.fillStyle = '#5a4428';
+      ctx.fillRect(ox, oy, 16, 1); ctx.fillRect(ox, oy + 15, 16, 1);
+      ctx.fillRect(ox, oy, 1, 16); ctx.fillRect(ox + 15, oy, 1, 16);
+      ctx.fillRect(ox + 7, oy + 1, 2, 14); ctx.fillRect(ox + 1, oy + 7, 14, 2);
+      ['#d8d8d8', '#b8b8b8'].forEach((c, i) => {
+        for (let k = 1; k < 6 - i * 2; k++) { px(ctx, ox + k, oy + 1, c); px(ctx, ox + 1, oy + k, c); px(ctx, ox + k, oy + k, c); }
+      });
+    },
+    pumpkin_side(ctx, ox, oy, rand) {
+      for (let x = 0; x < 16; x++) {
+        const rib = x % 4 === 0;
+        for (let y = 0; y < 16; y++)
+          px(ctx, ox + x, oy + y, rib ? '#b8600c' : pick(rand, ['#e38a1f', '#d67a12', '#f09a2a', '#e08418']));
+      }
+      ctx.fillStyle = '#c8700f';
+      ctx.fillRect(ox, oy, 16, 1);
+    },
+    pumpkin_top(ctx, ox, oy, rand) {
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++) {
+          const rib = (x === 7 || x === 8 || y === 7 || y === 8) && Math.abs(x - 7.5) + Math.abs(y - 7.5) > 2;
+          px(ctx, ox + x, oy + y, rib ? '#b8600c' : pick(rand, ['#e38a1f', '#d67a12', '#f09a2a']));
+        }
+      ctx.fillStyle = '#5a6a2a';
+      ctx.fillRect(ox + 7, oy + 7, 2, 2);
+    },
+    cobweb(ctx, ox, oy) {
+      for (let i = 0; i < 16; i++) {
+        px(ctx, ox + i, oy + i, '#dcdcdc');
+        px(ctx, ox + 15 - i, oy + i, '#dcdcdc');
+        px(ctx, ox + 7, oy + i, '#c8c8c8');
+        px(ctx, ox + i, oy + 8, '#c8c8c8');
+      }
+      [3, 6].forEach((r) => {
+        for (let k = -r; k <= r; k++) {
+          [[7 + k, 8 - r], [7 + k, 8 + r], [7 - r, 8 + k], [7 + r, 8 + k]].forEach(([x, y]) => {
+            if (x >= 0 && x < 16 && y >= 0 && y < 16 && (x + y) % 2 === 0) px(ctx, ox + x, oy + y, '#bdbdbd');
+          });
+        }
+      });
+    },
+    red_mushroom(ctx, ox, oy) {
+      ctx.fillStyle = '#e8dcc8'; ctx.fillRect(ox + 7, oy + 10, 2, 6);
+      ctx.fillStyle = '#c42a1f'; ctx.fillRect(ox + 5, oy + 7, 6, 3); ctx.fillRect(ox + 6, oy + 6, 4, 1);
+      px(ctx, ox + 6, oy + 8, '#f4f0e8'); px(ctx, ox + 9, oy + 7, '#f4f0e8');
+    },
+    brown_mushroom(ctx, ox, oy) {
+      ctx.fillStyle = '#d8ccb4'; ctx.fillRect(ox + 7, oy + 11, 2, 5);
+      ctx.fillStyle = '#8a6444'; ctx.fillRect(ox + 5, oy + 9, 6, 2); ctx.fillRect(ox + 6, oy + 8, 4, 1);
+    },
+    dead_bush(ctx, ox, oy, rand) {
+      const twig = (x, y, dx, len) => {
+        for (let i = 0; i < len; i++) {
+          px(ctx, ox + Math.round(x), oy + Math.round(y), pick(rand, ['#6b4a2a', '#8a6a3a', '#5a3d22']));
+          x += dx; y -= 1;
+          if (x < 0 || x > 15 || y < 0) break;
+        }
+      };
+      twig(7, 15, 0, 6); twig(7, 11, -0.7, 7); twig(8, 12, 0.8, 7); twig(6, 9, -0.2, 6); twig(9, 8, 0.4, 6);
+    },
+    dry_grass(ctx, ox, oy, rand) {
+      for (let i = 0; i < 8; i++) {
+        let x = 1 + rand() * 14;
+        const h = 5 + ((rand() * 8) | 0);
+        const lean = (rand() - 0.5) * 0.45;
+        const col = pick(rand, ['#8a8a4a', '#9a8a52', '#7a7040', '#a09060']);
+        for (let y = 0; y < h; y++) {
+          px(ctx, ox + Math.max(0, Math.min(15, Math.round(x))), oy + 15 - y, col);
+          x += lean;
+        }
+      }
+    },
   };
 
   function flower(ctx, ox, oy, petals, center) {
@@ -241,9 +370,12 @@
     'grass_top', 'grass_side', 'dirt', 'stone', 'log_side', 'log_top', 'leaves', 'planks',
     'cobble', 'window', 'path_top', 'path_side', 'hay_side', 'hay_top', 'farmland', 'spruce_planks',
     'tall_grass', 'poppy', 'dandelion', 'cornflower', 'wheat', 'door_bottom', 'door_top', 'lantern',
+    'dark_log_side', 'dark_log_top', 'dark_leaves', 'spruce_log_side', 'spruce_leaves', 'podzol_top', 'podzol_side', 'mossy_cobble',
+    'window_dark', 'pumpkin_side', 'pumpkin_top', 'cobweb', 'red_mushroom', 'brown_mushroom', 'dead_bush', 'dry_grass',
   ];
 
   function buildAtlas() {
+    const ROWS = Math.ceil(TILE_NAMES.length / COLS);
     const canvas = makeCanvas(COLS * TILE, ROWS * TILE);
     const ctx = canvas.getContext('2d');
     const index = {};

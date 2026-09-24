@@ -117,6 +117,7 @@
       tod: 0,
       moonScale: 1,
       moonDir, sunDir, ambient, dirLight, stars,
+      uniforms: skyMat.uniforms, sun, moon, starMat, cloudMat, clouds,
       setTime(tod) {
         tod = U.clamp(tod, 0, 1);
         api.tod = tod;

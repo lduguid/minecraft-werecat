@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grandpa's House - a Halloween prequel to The Werecat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/halloween.css">
+</head>
+<body class="halloween">
+  <div id="stage">
+    <canvas id="view"></canvas>
+  </div>
+
+  <div id="vignette"></div>
+  <div id="flashback-frame"><span></span></div>
+  <div id="flash"></div>
+  <div id="fade"></div>
+  <div class="bar top"></div>
+  <div class="bar bottom"></div>
+
+  <div id="caption"><span id="caption-text"></span></div>
+  <div id="bigtext"></div>
+
+  <div id="hud" class="hidden">
+    <button id="btn-pause" class="mc-btn small" title="Space">Pause</button>
+    <button id="btn-mute" class="mc-btn small" title="M">Sound: On</button>
+    <button id="btn-restart" class="mc-btn small" title="R">Restart</button>
+  </div>
+
+  <div id="title" class="screen">
+    <div class="logo-wrap">
+      <h1 class="logo">GRANDPA'S HOUSE</h1>
+      <div class="splash">Trick or treat!</div>
+    </div>
+    <p class="tagline">A Halloween prequel to The Werecat.</p>
+    <button id="btn-play" class="mc-btn" disabled>Loading world...</button>
+    <p class="hint">Turn your sound on. &nbsp; Space = pause &nbsp; M = mute &nbsp; R = restart</p>
+  </div>
+
+  <div id="end" class="screen hidden">
+    <p class="tagline">To be continued in...</p>
+    <h2 class="logo small">THE WERECAT</h2>
+    <div class="end-buttons">
+      <a class="mc-btn" href="index.html">Watch The Werecat</a>
+      <button id="btn-replay" class="mc-btn">Watch again</button>
+    </div>
+  </div>
+
+  <div id="error" class="screen hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script>
+    if (!window.THREE) {
+      document.write('<script src="https://unpkg.com/three@0.158.0/build/three.min.js"><\/script>');
+    }
+  </script>
+  <script src="js/util.js"></script>
+  <script src="js/textures.js"></script>
+  <script src="js/mesher.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/sky.js"></script>
+  <script src="js/actor.js"></script>
+  <script src="js/mobs.js"></script>
+  <script src="js/creatures.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/halloween/world.js"></script>
+  <script src="js/halloween/props.js"></script>
+  <script src="js/halloween/audio.js"></script>
+  <script src="js/halloween/atmosphere.js"></script>
+  <script src="js/halloween/story.js"></script>
+  <script src="js/halloween/main.js"></script>
+</body>
+</html>

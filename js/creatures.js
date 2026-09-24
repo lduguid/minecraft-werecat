@@ -61,18 +61,29 @@
   }
 
   // ---------------------------------------------------------------- Feral cat (flashback)
-  function cat() {
+  // opts: { fur, stripe, eyes, muzzle, glowEyes }
+  function cat(opts) {
+    opts = opts || {};
     const a = new Actor('cat');
     const r = a.rig;
-    const fur = '#8a8176';
-    const vStripes = (ctx, w, h) => { ctx.fillStyle = '#4e4840'; for (let x = 1; x < w; x += 3) ctx.fillRect(x, 0, 1, h - 1); };
-    const hStripes = (ctx, w, h) => { ctx.fillStyle = '#4e4840'; for (let y = 1; y < h; y += 3) ctx.fillRect(0, y, w, 1); };
+    const fur = opts.fur || '#8a8176';
+    const stripe = opts.stripe || '#4e4840';
+    const eyeColor = opts.eyes || '#9cff3a';
+    const vStripes = (ctx, w, h) => { ctx.fillStyle = stripe; for (let x = 1; x < w; x += 3) ctx.fillRect(x, 0, 1, h - 1); };
+    const hStripes = (ctx, w, h) => { ctx.fillStyle = stripe; for (let y = 1; y < h; y += 3) ctx.fillRect(0, y, w, 1); };
     const body = pivot(r, 0, 8.5, 0);
     put(body, skinBox(4, 5, 14, { color: fur, left: vStripes, right: vStripes, top: hStripes }), 0, 0, 0);
     const head = pivot(r, 0, 10, 7);
-    const eyes = pattern(['', '.g.g.'], { g: '#9cff3a' });
+    const eyes = pattern(['', '.g.g.'], { g: eyeColor });
     put(head, skinBox(5, 4, 5, { color: fur, front: (ctx) => { eyes(ctx); }, top: hStripes, glow: { front: eyes } }), 0, 1.5, 2);
-    put(head, skinBox(3, 2, 1, { color: '#b0a89c', front: pattern(['.p.'], { p: '#e07a8a' }) }), 0, 0.5, 5);
+    put(head, skinBox(3, 2, 1, { color: opts.muzzle || '#b0a89c', front: pattern(['.p.'], { p: '#e07a8a' }) }), 0, 0.5, 5);
+    if (opts.glowEyes) {
+      [-1, 1].forEach((sx) => {
+        const e = eyeSprite(eyeColor, 0.13);
+        e.position.set(sx * P, 2 * P, 4.7 * P);
+        head.add(e);
+      });
+    }
     put(head, skinBox(1, 2, 1, { color: fur }), 1.5, 4, 1.5);
     put(head, skinBox(1, 2, 1, { color: fur }), -1.5, 4, 1.5);
     const legs = [];
@@ -85,18 +96,31 @@
     put(tail, skinBox(1, 1, 9, { color: fur, left: vStripes, right: vStripes }), 0, 0, -4.5);
     Object.assign(a.parts, { head, legs, tail, body });
     a.stride = 6;
+    a.sitK = 0;
     a.anim = (dt, t) => {
       const k = Math.min(1, a.vel * 0.5) * 0.8;
       const s = Math.sin(a.phase) * k;
       const pounce = a.mode === 'pounce';
+      const sit = a.mode === 'sit';
+      approach(a, 'sitK', sit ? 1 : 0, 6, dt);
+      const q = a.sitK;
       legs[0].rotation.x = pounce ? -1.2 : s;
       legs[1].rotation.x = pounce ? -1.2 : -s;
-      legs[2].rotation.x = pounce ? 1.0 : -s;
-      legs[3].rotation.x = pounce ? 1.0 : s;
+      legs[2].rotation.x = pounce ? 1.0 : U.lerp(-s, -1.35, q);
+      legs[3].rotation.x = pounce ? 1.0 : U.lerp(s, -1.35, q);
+      legs[2].position.y = legs[3].position.y = (6 - 3.5 * q) * P;
+      legs[0].position.y = legs[1].position.y = (6 + 3 * q) * P;
+      legs[0].scale.y = legs[1].scale.y = 1 + 0.5 * q;
+      body.position.y = (8.5 - 1.2 * q) * P;
+      body.position.z = -1.5 * q * P;
+      head.position.y = (10 + 2.3 * q) * P;
+      head.position.z = (7 - 3.8 * q) * P;
+      tail.position.y = (10 - 7 * q) * P;
+      tail.position.z = (-7 - 0.5 * q) * P;
       const hiss = a.mode === 'hiss';
-      approach(tail.rotation, 'x', hiss ? 1.4 : 0.8, 6, dt);
+      approach(tail.rotation, 'x', sit ? -0.15 : hiss ? 1.4 : 0.8, 6, dt);
       tail.rotation.y = Math.sin(t * (hiss ? 9 : 2)) * 0.3;
-      approach(body.rotation, 'x', hiss ? -0.15 : 0, 6, dt);
+      approach(body.rotation, 'x', sit ? -0.5 : hiss ? -0.15 : 0, 6, dt);
       head.rotation.y = a.headYaw;
       head.rotation.x = a.headPitch + (hiss ? -0.3 : 0);
     };

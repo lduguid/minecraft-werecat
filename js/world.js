@@ -2,7 +2,7 @@
   const { B, VoxelGrid } = WC.Mesher;
   const U = WC.U;
 
-  const X_MIN = -56, SX = 112, Z_MIN = -100, SZ = 148, SY = 44;
+  const X_MIN = -56, SX = 112, Z_MIN = -100, SZ0 = 148, SY = 44;
   const VH = 12; // top block height inside the village
   const S = { x: 2, z: 6 }; // where the villager gets caught by nightfall
   const VC = { x: -4, z: -62 }; // village centre, far to the north
@@ -37,7 +37,16 @@
     return Math.round(h);
   }
 
-  function build(scene) {
+  // opts (all optional, used by other stories set in the same world):
+  //   zMax      extend the world further south
+  //   height    (x, z, h) => h, reshape the terrain
+  //   treeOk    (x, z) => bool, veto a scattered plains tree
+  //   decorate  (tools) => extra, build additional structures
+  //   plant     (x, z, h, r, rand) => plant | null | undefined (undefined = default plants)
+  //   mesher    options passed to WC.Mesher.build
+  function build(scene, opts) {
+    opts = opts || {};
+    const SZ = opts.zMax !== undefined ? opts.zMax - Z_MIN : SZ0;
     const grid = new VoxelGrid(X_MIN, Z_MIN, SX, SY, SZ);
     const hmap = new Int16Array(SX * SZ);
     const cx = (x) => U.clamp(x, X_MIN, X_MIN + SX - 1);
@@ -48,7 +57,7 @@
     // ---- Terrain ----
     for (let x = X_MIN; x < X_MIN + SX; x++) {
       for (let z = Z_MIN; z < Z_MIN + SZ; z++) {
-        const h = terrainHeight(x, z);
+        const h = opts.height ? opts.height(x, z, terrainHeight(x, z)) : terrainHeight(x, z);
         setH(x, z, h);
         for (let y = 0; y <= h; y++) grid.set(x, y, z, y === h ? B.GRASS : y >= h - 3 ? B.DIRT : B.STONE);
       }
@@ -190,10 +199,13 @@
       if (Math.hypot(x - S.x, z - S.z) < 10) continue;
       if (spotList.some(([sx, sz]) => Math.hypot(x - sx, z - sz) < 4.5)) continue;
       if (trees.some(([tx, tz]) => Math.hypot(x - tx, z - tz) < 6)) continue;
+      if (opts.treeOk && !opts.treeOk(x, z)) continue;
       tree(x, z);
     }
     tree(VC.x - 17, VC.z + 2);
     tree(VC.x + 12, VC.z - 12);
+
+    const extra = opts.decorate ? opts.decorate({ grid, B, H, top, noPlant, key, plants, rand, trees, tree, SY }) : null;
 
     // ---- Grass and flowers ----
     for (let x = X_MIN; x < X_MIN + SX; x++) {
@@ -202,6 +214,13 @@
         const h = H(x, z);
         if (grid.get(x, h, z) !== B.GRASS || grid.get(x, h + 1, z) !== B.AIR) continue;
         const r = rand();
+        if (opts.plant) {
+          const p = opts.plant(x, z, h, r, rand);
+          if (p !== undefined) {
+            if (p) plants.push(p);
+            continue;
+          }
+        }
         const nearStart = Math.hypot(x - S.x, z - S.z) < 7;
         if (nearStart && r < 0.16) plants.push({ x, y: h + 1, z, tile: U.hash2(x, z, 3) < 0.55 ? 'poppy' : U.hash2(x, z, 4) < 0.5 ? 'cornflower' : 'dandelion', h: 1 });
         else if (r < 0.22) plants.push({ x, y: h + 1, z, tile: 'tall_grass', h: 0.75 + rand() * 0.25 });
@@ -211,7 +230,7 @@
 
     // ---- Mesh it ----
     const atlas = WC.Tex.buildAtlas();
-    const { meshes, materials } = WC.Mesher.build(grid, atlas, plants);
+    const { meshes, materials } = WC.Mesher.build(grid, atlas, plants, opts.mesher);
     Object.values(meshes).forEach((m) => scene.add(m));
 
     // ---- Lights: torches, lamp, window glows ----
@@ -270,7 +289,8 @@
     let lightsLevel = 1;
 
     const api = {
-      grid, B, atlas, materials, meshes, VH,
+      grid, B, atlas, materials, meshes, VH, extra,
+      heightAt(x, z) { return H(Math.floor(x), Math.floor(z)); },
       S: new THREE.Vector3(S.x + 0.5, H(S.x, S.z) + 1, S.z + 0.5),
       VC: new THREE.Vector3(VC.x + 0.5, VH + 1, VC.z + 0.5),
       FB: new THREE.Vector3(FB.x + 0.5, H(FB.x, FB.z) + 1, FB.z + 0.5),

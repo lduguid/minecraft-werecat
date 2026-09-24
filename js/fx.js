@@ -7,6 +7,8 @@
     dust: { colors: ['#7a6a4a', '#5f7a3c', '#8a7a5a'], life: [0.3, 0.6], size: [0.08, 0.14], speed: 0.8, up: 0.9, gravity: -3, drag: 2 },
     spark: { colors: ['#e4ff4a', '#fff8a0', '#b8ff30'], life: [0.8, 1.6], size: [0.08, 0.16], speed: 2.2, up: 1.5, gravity: 0.5, drag: 1.5 },
     fur: { colors: ['#2c2b30', '#1d1c21', '#4a4850'], life: [0.8, 1.4], size: [0.1, 0.2], speed: 2.6, up: 1.2, gravity: -2.5, drag: 1 },
+    leaf: { colors: ['#c8641e', '#a8421a', '#d8a030', '#7a3a14'], life: [3, 5], size: [0.09, 0.14], speed: 1.4, up: 0.1, gravity: 0.35, drag: 0.6 },
+    witch: { colors: ['#b040ff', '#60ff60', '#e070ff'], life: [0.8, 1.5], size: [0.2, 0.35], speed: 0.4, up: 0.1, gravity: 0.3, drag: 1 },
   };
 
   function create(scene) {

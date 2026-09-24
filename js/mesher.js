@@ -2,6 +2,8 @@
   const B = {
     AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, LOG: 4, LEAVES: 5, PLANKS: 6, COBBLE: 7,
     WINDOW: 8, PATH: 9, HAY: 10, FARMLAND: 11, SPRUCE: 12, DOOR_B: 13, DOOR_T: 14, LANTERN: 15,
+    DARK_LOG: 16, DARK_LEAVES: 17, SPRUCE_LOG: 18, SPRUCE_LEAVES: 19, PODZOL: 20, MOSSY: 21,
+    WINDOW_DARK: 22, PUMPKIN: 23,
   };
 
   const DEFS = [];
@@ -23,6 +25,16 @@
   def(B.DOOR_B, 'door_bottom');
   def(B.DOOR_T, 'door_top');
   def(B.LANTERN, 'lantern', 'lantern', 'lantern', 'glow');
+  def(B.DARK_LOG, 'dark_log_top', 'dark_log_side', 'dark_log_top');
+  def(B.DARK_LEAVES, 'dark_leaves', 'dark_leaves', 'dark_leaves', 'cutout', false);
+  def(B.SPRUCE_LOG, 'dark_log_top', 'spruce_log_side', 'dark_log_top');
+  def(B.SPRUCE_LEAVES, 'spruce_leaves', 'spruce_leaves', 'spruce_leaves', 'cutout', false);
+  def(B.PODZOL, 'podzol_top', 'podzol_side', 'dirt');
+  def(B.MOSSY, 'mossy_cobble');
+  def(B.WINDOW_DARK, 'window_dark');
+  def(B.PUMPKIN, 'pumpkin_top', 'pumpkin_side', 'pumpkin_top');
+  DEFS[B.DARK_LEAVES].cullSame = true;
+  DEFS[B.SPRUCE_LEAVES].cullSame = true;
 
   const OUT = 255;
 
@@ -116,12 +128,58 @@
   }
 
   // plants: [{x, y, z, tile, h}] where y is the air cell above the ground block.
-  function build(grid, atlas, plants) {
+  // opts.canopyShade (0..1): darken anything under tree leaves by this factor.
+  // opts.roofShade (0..1): darken faces whose open side is under a solid block (house interiors).
+  function build(grid, atlas, plants, opts) {
     const uvCache = {};
     DEFS.forEach((d, id) => {
       if (!d) return;
       uvCache[id] = { top: atlas.uv(d.top), side: atlas.uv(d.side), bottom: atlas.uv(d.bottom) };
     });
+
+    const shadeK = opts && opts.canopyShade;
+    let canopy = null;
+    if (shadeK) {
+      canopy = new Int16Array(grid.sx * grid.sz).fill(-1);
+      for (let x = 0; x < grid.sx; x++) {
+        for (let z = 0; z < grid.sz; z++) {
+          for (let y = grid.sy - 1; y >= 0; y--) {
+            const id = grid.data[(x * grid.sy + y) * grid.sz + z];
+            if (id === B.AIR) continue;
+            if (DEFS[id].group === 'cutout') canopy[x * grid.sz + z] = y;
+            break;
+          }
+        }
+      }
+    }
+    const shadeAt = (x, fy, z) => {
+      let n = 0;
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dz = -1; dz <= 1; dz++) {
+          const ix = x - grid.xMin + dx, iz = z - grid.zMin + dz;
+          if (ix >= 0 && iz >= 0 && ix < grid.sx && iz < grid.sz && canopy[ix * grid.sz + iz] > fy) n++;
+        }
+      }
+      return 1 - (1 - shadeK) * (n / 9);
+    };
+
+    const roofK = opts && opts.roofShade;
+    let roof = null;
+    if (roofK) {
+      roof = new Int16Array(grid.sx * grid.sz).fill(-1);
+      for (let x = 0; x < grid.sx; x++) {
+        for (let z = 0; z < grid.sz; z++) {
+          for (let y = grid.sy - 1; y >= 0; y--) {
+            const id = grid.data[(x * grid.sy + y) * grid.sz + z];
+            if (id !== B.AIR && DEFS[id].opaque) { roof[x * grid.sz + z] = y; break; }
+          }
+        }
+      }
+    }
+    const covered = (ax, ay, az) => {
+      const ix = ax - grid.xMin, iz = az - grid.zMin;
+      return ix >= 0 && iz >= 0 && ix < grid.sx && iz < grid.sz && roof[ix * grid.sz + iz] > ay;
+    };
 
     const bufs = { solid: newBuf(), cutout: newBuf(), glow: newBuf() };
     const verts = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
@@ -139,7 +197,7 @@
             const f = FACES[fi];
             const nid = grid.get(x + f.n[0], y + f.n[1], z + f.n[2]);
             if (isOpaque(nid)) continue;
-            if (nid === id && d.opaque) continue;
+            if (nid === id && (d.opaque || d.cullSame)) continue;
             for (let k = 0; k < 4; k++) {
               verts[k][0] = x + f.c[k][0];
               verts[k][1] = y + f.c[k][1];
@@ -152,6 +210,13 @@
                 cols[k] = f.shade * AO_CURVE[ao[k]];
               }
             }
+            if (canopy && d.group !== 'glow') {
+              const sh = shadeAt(x, f.n[1] > 0 ? y + 1 : y, z);
+              if (sh < 1) for (let k = 0; k < 4; k++) cols[k] *= sh;
+            }
+            if (roof && d.group !== 'glow' && covered(x + f.n[0], y + f.n[1], z + f.n[2])) {
+              for (let k = 0; k < 4; k++) cols[k] *= roofK;
+            }
             const flip = ao[0] + ao[2] < ao[1] + ao[3];
             pushQuad(buf, verts, f.n, uvCache[id][f.tile], cols, flip);
           }
@@ -162,7 +227,8 @@
     const prng = WC.U.rng(777);
     plants.forEach((p) => {
       const jx = (prng() - 0.5) * 0.3, jz = (prng() - 0.5) * 0.3;
-      pushPlant(bufs.cutout, p.x, p.y, p.z, atlas.uv(p.tile), jx, jz, p.h || 1, 0.8 + prng() * 0.2);
+      const c = (0.8 + prng() * 0.2) * (canopy ? shadeAt(p.x, p.y, p.z) : 1);
+      pushPlant(bufs.cutout, p.x, p.y, p.z, atlas.uv(p.tile), p.fixed ? 0 : jx, p.fixed ? 0 : jz, p.h || 1, c);
     });
 
     const materials = {
