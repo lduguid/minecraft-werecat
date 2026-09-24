@@ -117,12 +117,13 @@
       });
     }
 
-    const clawPoppy = FW.poppy();
+    const clawPoppy = FW.poppy(0.3);
     clawPoppy.position.set(0, -15 * P, 1.5 * P);
     werecat.parts.armR.add(clawPoppy);
-    const groundPoppy = FW.poppy();
-    groundPoppy.position.set(-7.5, 13.1, -54.7);
-    groundPoppy.rotation.set(-1.1, 0.5, 0);
+    const groundPoppy = FW.poppy(0.3);
+    // Resting pose: almost flat in the grass, stem towards the lair door so the doorway camera sees the whole flower.
+    groundPoppy.position.set(-7.05, 13.14, -55.0);
+    groundPoppy.rotation.set(0.3 - Math.PI / 2, -1.68, 0, 'YXZ');
     groundPoppy.scale.setScalar(1.3);
     scene.add(groundPoppy);
     const lapPoppy = FW.poppy();

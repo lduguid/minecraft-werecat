@@ -25,7 +25,11 @@ window.WC = window.WC || {};
     const CAULDRON = V(-12.4, 13, -57.4);
     const WITCH_SPOT = V(-11.7, 13, -56.7);
     const BEAST_SPOT = V(-12.05, 13, -55.65);
-    const WIDE_CAM = V(-10.3, 15.6, -54.3), WIDE_LOOK = V(-12.0, 14.45, -55.5);
+    const WITCH_HIT = V(-11.2, 13, -57.35);
+    const DOOR_IN = V(-10.1, 14.3, -55.5);
+    const WIDE_CAM = V(-10.3, 15.6, -54.3);
+    const FIGHT_LOOK = V(-11.95, 14.5, -55.85);
+    const DOOR_CAM = V(-11.3, 14.45, -54.25), DOOR_LOOK = V(-10.67, 14.2, -56.15);
     const SHELF_NEAR = V(-12.8, 14.5, -55.2);
     const HAT_HOOK = V(-10.6, 14.75, -57.85);
     const DAWN_BEAST = V(-7.0, 13, -50.2), DAWN_V = V(-6.6, 13, -48.9);
@@ -89,19 +93,56 @@ window.WC = window.WC || {};
       scene.add(b);
       falling = { b, vel: V(0.3, vy, 0.2), groundY, onLand };
     }
+    // Move an actor to a spot over dur seconds; with a height h it leaves the ground and faces where it's going.
+    let pounce = null;
+    function finishPounce() {
+      const p = pounce;
+      pounce = null;
+      p.a.pos.copy(p.to);
+      p.a.grounded = true;
+      if (p.onLand) p.onLand();
+    }
+    function leap(a, to, dur, h, onLand) {
+      if (pounce) finishPounce();
+      a.stop();
+      if (h > 0) {
+        a.grounded = false;
+        a.yaw = a.targetYaw = yawTo(a.pos, to);
+      }
+      pounce = { a, from: a.pos.clone(), to: to.clone(), t: 0, dur, h, onLand };
+    }
     let carry = null;
     function carryTo(obj, to, dur, onDone) {
       carry = { obj, from: obj.getWorldPosition(new THREE.Vector3()), to: to.clone(), t: 0, dur, onDone };
       scene.attach(obj);
     }
 
-    let smokeT = 0, cureT = 0, ended = false;
+    let smokeT = 0, cureT = 0, evilT = 0, ended = false;
     const lairLight = PR.cauldron.light;
+
+    // The poppy slips out of the werecat's claw and settles into the resting pose set up in main.js.
+    const poppyRest = { pos: PR.groundPoppy.position.clone(), quat: PR.groundPoppy.quaternion.clone() };
+    let laying = null;
+    function layPoppy(dur) {
+      const g = PR.groundPoppy, c = PR.clawPoppy;
+      laying = { from: c.getWorldPosition(new THREE.Vector3()), fromQ: c.getWorldQuaternion(new THREE.Quaternion()), t: 0, dur };
+      c.visible = false;
+      g.position.copy(laying.from);
+      g.quaternion.copy(laying.fromQ);
+      g.visible = true;
+    }
+    function finishLaying() {
+      laying = null;
+      PR.groundPoppy.position.copy(poppyRest.pos);
+      PR.groundPoppy.quaternion.copy(poppyRest.quat);
+    }
 
     function resetProps() {
       flying.splice(0).forEach((f) => scene.remove(f.b));
       if (falling) { scene.remove(falling.b); falling = null; }
       carry = null;
+      pounce = null;
+      finishLaying();
       PR.restoreHeld();
       held.flower.visible = false; held.apple.visible = false; held.bottle.visible = false;
       PR.clawPoppy.visible = false;
@@ -114,7 +155,7 @@ window.WC = window.WC || {};
       PR.door.setClawed(false);
       doorAngle = doorTarget = -1.4;
       doorKick = 0;
-      smokeT = cureT = 0;
+      smokeT = cureT = evilT = 0;
     }
 
     const beats = [
@@ -168,12 +209,23 @@ window.WC = window.WC || {};
           c.walkTo(dest.x, dest.z, 1.1);
         },
         cues: [
-          [2.6, () => { A.tabby.stop(); A.tabby.lookTarget = camera.position.clone(); }],
+          [1.4, () => { A.tabby.setEvil(true); smokeT = 0; evilT = 2.6; spooky.growl(0.6); }],
+          [2.3, () => {
+            const c = A.tabby;
+            c.stop();
+            c.mode = 'hiss';
+            c.lookTarget = camera.position;
+            audio.catHiss();
+            spooky.meow(0.6, 0.8);
+            audio.stinger();
+          }],
           [3.6, () => fx.flash(0.9)],
         ],
-        tick() {
+        tick(lt) {
           const c = A.tabby;
-          cam(EYES.clone().addScaledVector(TO_CAM, 5.8).add(V(0.4, 0.8, 0)), at(c.pos, 0, 0.4, 0), 45);
+          const push = U.ease.inOut(U.smoothstep(2.2, 3.6, lt));
+          const pos = EYES.clone().addScaledVector(TO_CAM, 5.8 - 1.5 * push).add(V(0.4 * (1 - push), 0.8 - 0.1 * push, 0));
+          cam(pos, at(c.pos, 0, 0.4 + 0.25 * push, 0), 45 - 5 * push);
         },
       },
       // ---------------- Act 1: the escape
@@ -197,7 +249,7 @@ window.WC = window.WC || {};
           wc.followPath([flat(-3.5, -40), flat(-3.5, -52), flat(-6.2, -55.2), flat(-8.0, -55.5)], 3.4);
         },
         cues: [
-          [0.4, () => fx.caption('He reached the village... with the werecat right behind him.', { scary: true })],
+          [0.4, () => fx.caption('Alex reached the village... with the werecat right behind him.', { scary: true })],
           [1.5, () => audio.villager('panic', 1)],
           [4.6, () => { setDoor(0, 16); snd.slam(1); fx.shake(0.35, 0.3); audio.chase(0, 1); }],
         ],
@@ -241,8 +293,7 @@ window.WC = window.WC || {};
           [3.2, () => { wc.lookTarget = vHead; }],
           [5.0, () => { wc.mode = 'crouch'; }],
           [5.6, () => {
-            PR.clawPoppy.visible = false;
-            PR.groundPoppy.visible = true;
+            layPoppy(0.45);
             fx.caption('It left something on the doorstep: his poppy.');
           }],
           [6.6, () => { wc.lookTarget = null; wc.mode = 'stand'; wc.walkTo(-3.5, -44, 1.5); }],
@@ -253,7 +304,8 @@ window.WC = window.WC || {};
           if (lt < 3) cam(V(-12.4, 14.6, -56.3), at(v.pos, 0, 1.45, 0), 50, true);
           else {
             const d = U.ease.inOut(U.smoothstep(4.4, 6.0, lt));
-            cam(V(-8.95, 14.45, -55.2), at(wc.pos, 0, 2.0, 0).lerp(V(-7.5, 13.45, -54.7), d), 55);
+            const zoom = U.ease.inOut(U.smoothstep(6.4, 10.5, lt));
+            cam(V(-8.95, 14.45, -55.2), at(wc.pos, 0, 2.0, 0).lerp(at(poppyRest.pos, 0, 0.3, 0), d), 55 - 12 * zoom);
           }
         },
       },
@@ -303,6 +355,8 @@ window.WC = window.WC || {};
             place(A.familiar, at(DOORSTEP, 0.6, 0, 0.4), -Math.PI / 2, 'idle').walkTo(-11.1, -57.0, 1.3);
           }],
           [2.6, () => { v.stop(); v.faceTowards(-10.5, -56.5); }],
+          [4.2, () => { setDoor(0, 1.6); spooky.creak({ dur: 0.9, vol: 0.4 }); }],
+          [5.1, () => snd.slam(0.35)],
           [5.2, () => { witch.faceTowards(HAT_HOOK.x, HAT_HOOK.z); A.familiar.mode = 'sit'; }],
           [6.2, () => { PR.hookHat.visible = false; witch.setHood(false); fx.burst('witch', at(witch.pos, 0, 2.2, 0), 10, 0.4); }],
           [6.6, () => { witch.faceTowards(-10.5, -54.8); witch.cackling = true; spooky.cackle({ dist: 0.25, vol: 0.8 }); }],
@@ -349,43 +403,92 @@ window.WC = window.WC || {};
           witch.lookTarget = vHead;
           place(v, HIDE, yawTo(HIDE, WITCH_SPOT), 'idle');
           hold('apple', true);
+          place(A.familiar, V(-11.1, 13, -57.0), 0.4, 'sit');
+          doorAngle = doorTarget = 0;
+          place(wc, V(-6.9, 13, -55.5), -Math.PI / 2, 'run');
+          wc.snapPose();
+          wc.setEyes(1);
           audio.drone(0.9, 1);
         },
         cues: [
+          [0.2, () => { witch.cackling = true; spooky.cackle({ dist: 0.2, vol: 0.6 }); }],
           [0.9, () => {
-            setDoor(-1.65, 14);
+            witch.cackling = false;
+            witch.lookTarget = DOOR_IN;
+            snd.slam(0.7);
+            doorKick = 1;
+            fx.burst('splinter', DOOR_IN, 6, 0.4);
+            spooky.growl(0.7);
+          }],
+          [1.5, () => {
+            snd.slam(1);
+            doorKick = 1.4;
+            fx.shake(0.25, 0.3);
+            fx.burst('splinter', DOOR_IN, 10, 0.5);
+            A.familiar.mode = 'hiss';
+            A.familiar.faceTowards(DOOR_IN.x, DOOR_IN.z);
+            audio.catHiss();
+          }],
+          [2.0, () => {
+            setDoor(-1.65, 16);
             snd.slam(1.3);
             audio.boom(0.9);
             fx.shake(0.6, 0.6);
-            fx.burst('splinter', V(-9.6, 14.2, -55.5), 24, 0.8);
-            place(wc, DOORSTEP, -Math.PI / 2, 'stalk');
-            wc.snapPose();
-            wc.setEyes(1);
-            wc.walkTo(BEAST_SPOT.x, BEAST_SPOT.z, 6);
+            fx.burst('splinter', V(-9.8, 14.2, -55.5), 24, 0.8);
+            wc.walkTo(-10.7, -55.55, 6);
+            v.mode = 'panic';
+            audio.villager('panic', 0.8);
           }],
-          [1.5, () => { wc.mode = 'crouch'; wc.lookTarget = witchHead; audio.howl({ dist: 0.05, dur: 1.6, pitch: 0.95, vol: 0.8 }); fx.shake(0.4, 1.4); }],
-          [2.1, () => { wc.faceTowards(WITCH_SPOT.x, WITCH_SPOT.z); witch.lookTarget = at(wc.pos, 0, 2, 0); }],
-          [4.2, () => audio.villager('question', 0.8)],
+          [2.55, () => leap(wc, BEAST_SPOT, 0.5, 0.45, () => {
+            wc.mode = 'crouch';
+            wc.faceTowards(WITCH_SPOT.x, WITCH_SPOT.z);
+            wc.lookTarget = witchHead;
+            fx.shake(0.4, 1.4);
+            fx.burst('dust', BEAST_SPOT, 12, 0.6);
+            audio.howl({ dist: 0.05, dur: 1.6, pitch: 0.95, vol: 0.8 });
+            v.mode = 'idle';
+          })],
+          [3.3, () => {
+            witch.lookTarget = at(BEAST_SPOT, 0, 2, 0);
+            const f = A.familiar;
+            f.mode = 'idle';
+            f.followPath([flat(f.pos.x, f.pos.z), flat(-10.6, -55.6), flat(-6.0, -55.2)], 5);
+          }],
+          [4.4, () => { wc.swipeT = 0.35; snd.whoosh(); }],
+          [4.55, () => {
+            leap(witch, WITCH_HIT, 0.35, 0);
+            witch.hurt();
+            witch.holdUp = false;
+            snd.shriek();
+            fx.shake(0.3, 0.35);
+            fx.burst('witch', at(witch.pos, 0, 1.4, 0), 8, 0.5);
+          }],
+          [4.9, () => wc.faceTowards(WITCH_HIT.x, WITCH_HIT.z)],
+          [5.2, () => audio.villager('question', 0.7)],
+          [6.0, () => { witch.lookTarget = at(BEAST_SPOT, 0, 2.1, 0); witch.holdUp = true; }],
         ],
         tick(lt) {
-          if (lt < 1.2) cam(V(-12.4, 14.7, -55.95), V(-10.1, 14.3, -55.5), 58, true);
-          else cam(WIDE_CAM, WIDE_LOOK, 66, true);
+          if (lt < 2.5) cam(DOOR_CAM, DOOR_LOOK, 66, true);
+          else cam(WIDE_CAM, FIGHT_LOOK, 66, true);
         },
       },
       {
         at: 74, k: [0, 0],
         enter() {
-          place(wc, BEAST_SPOT, yawTo(BEAST_SPOT, WITCH_SPOT), 'crouch');
-          place(witch, WITCH_SPOT, yawTo(WITCH_SPOT, BEAST_SPOT), 'idle');
+          place(wc, BEAST_SPOT, yawTo(BEAST_SPOT, WITCH_HIT), 'crouch');
+          place(witch, WITCH_HIT, yawTo(WITCH_HIT, BEAST_SPOT), 'idle');
           witch.setHood(false);
-          witch.holdUp = false;
+          witch.hurtT = 0;
+          witch.holdUp = true;
           PR.bigPotion.visible = true;
-          place(v, HIDE, yawTo(HIDE, WITCH_SPOT), 'idle');
+          place(v, HIDE, yawTo(HIDE, WITCH_HIT), 'idle');
           hold('apple', true);
         },
         cues: [
           [0.3, () => {
+            witch.holdUp = false;
             witch.throwT = 0.3;
+            PR.bigPotion.visible = false;
             throwBottle(0xb040ff, at(witch.pos, 0, 1.9, 0), at(wc.pos, 0, 1.4, 0), 0.4, () => {
               snd.smash(1);
               snd.fizz(1);
@@ -396,13 +499,13 @@ window.WC = window.WC || {};
               spooky.meow(0.6, 0.7);
             });
           }],
-          [2.2, () => { witch.holdUp = true; witch.faceTowards(HIDE.x, HIDE.z); witch.lookTarget = vHead; witch.cackling = true; spooky.cackle({ dist: 0.2, vol: 0.8 }); }],
+          [2.2, () => { witch.holdUp = true; PR.bigPotion.visible = true; witch.faceTowards(HIDE.x, HIDE.z); witch.lookTarget = vHead; witch.cackling = true; spooky.cackle({ dist: 0.2, vol: 0.8 }); }],
           [2.8, () => fx.caption('This time, he didn\'t run.')],
           [3.4, () => { witch.cackling = false; v.faceTowards(SHELF_NEAR.x, SHELF_NEAR.z); }],
           [3.9, () => { PR.shelf.bottles[4].visible = false; hold('bottle', true); }],
           [4.3, () => {
             hold('bottle', false);
-            v.faceTowards(WITCH_SPOT.x, WITCH_SPOT.z);
+            v.faceTowards(witch.pos.x, witch.pos.z);
             throwBottle(0x5aff4a, at(v.pos, 0, 1.3, 0), at(witch.pos, 0, 1.7, 0), 0.35, () => {
               snd.smash(1.2);
               snd.fizz(1.2);
@@ -411,17 +514,21 @@ window.WC = window.WC || {};
               fx.shake(0.4, 0.5);
               PR.bigPotion.visible = false;
               witch.visible = false;
-              const c = place(A.witchCat, WITCH_SPOT, yawTo(WITCH_SPOT, DOORSTEP), 'hiss');
+              const c = place(A.witchCat, witch.pos.clone(), yawTo(witch.pos, DOORSTEP), 'hiss');
               c.setEyes(1);
               spooky.meow(1.5, 0.9);
               audio.catHiss();
             });
           }],
-          [6.2, () => { A.witchCat.mode = 'idle'; A.witchCat.walkTo(-6.5, -53.5, 7); }],
+          [6.2, () => {
+            const c = A.witchCat;
+            c.mode = 'idle';
+            c.followPath([flat(c.pos.x, c.pos.z), flat(-10.6, -55.5), flat(-6.5, -53.5)], 7);
+          }],
           [7.0, () => audio.villager('hmm', 0.8)],
         ],
         tick(lt) {
-          cam(WIDE_CAM, WIDE_LOOK, 66, true);
+          cam(WIDE_CAM, FIGHT_LOOK, 66, true);
         },
       },
       // ---------------- Dawn: the cure
@@ -472,6 +579,7 @@ window.WC = window.WC || {};
           v.followPath(r, 1.5);
           place(A.grandpa, at(BENCH, 0, 0, -0.05), Math.PI, 'sit');
           place(A.tabby, V(-5.5, CH + 1, 55.2), Math.PI * 0.9, 'sit').setEyes(0);
+          A.tabby.setEvil(false, true);
           A.cats.forEach((c) => c.home());
           const d = (p) => Math.hypot(p.x + 10.5, p.z - 48.6);
           const post = hw.posts.reduce((b, p) => (d(p) < d(b) ? p : b));
@@ -525,6 +633,8 @@ window.WC = window.WC || {};
       flying.splice(0).forEach((f) => { scene.remove(f.b); if (f.onHit) f.onHit(); });
       if (falling) { const f = falling; falling = null; scene.remove(f.b); if (f.onLand) f.onLand(); }
       if (carry) { const c = carry; carry = null; c.obj.visible = false; PR.restoreHeld(); if (c.onDone) c.onDone(); }
+      if (pounce) finishPounce();
+      if (laying) finishLaying();
     }
 
     function enterBeat(i) {
@@ -553,10 +663,12 @@ window.WC = window.WC || {};
         a.shakeT = 0;
       });
       [v, wc, witch, A.witchFly, A.witchCat, A.familiar, A.tabby].forEach((a) => { a.visible = false; });
+      A.tabby.setEvil(false, true);
       A.witchCat.grounded = true;
       wc.mode = 'stand';
       wc.snapPose();
       wc.rig.rotation.z = 0;
+      wc.grounded = true;
       witch.holdUp = false;
       witch.cackling = false;
       witch.setHood(true);
@@ -619,6 +731,21 @@ window.WC = window.WC || {};
           if (f.onLand) f.onLand();
         }
       }
+      if (pounce) {
+        const p = pounce;
+        p.t += dt;
+        const u = Math.min(1, p.t / p.dur);
+        p.a.pos.lerpVectors(p.from, p.to, u);
+        p.a.pos.y += Math.sin(Math.PI * u) * p.h;
+        if (u >= 1) finishPounce();
+      }
+      if (laying) {
+        laying.t += dt;
+        const u = Math.min(1, laying.t / laying.dur);
+        PR.groundPoppy.position.lerpVectors(laying.from, poppyRest.pos, u * u);
+        PR.groundPoppy.quaternion.slerpQuaternions(laying.fromQ, poppyRest.quat, U.ease.inOut(u));
+        if (u >= 1) finishLaying();
+      }
       if (carry) {
         carry.t += dt;
         const u = Math.min(1, carry.t / carry.dur);
@@ -635,6 +762,10 @@ window.WC = window.WC || {};
       if (smokeT > 0) {
         smokeT -= dt;
         if (Math.random() < dt * 12) fx.burst('curse', at(EYES, 0, 0.4, 0), 1, 0.8);
+      }
+      if (evilT > 0) {
+        evilT -= dt;
+        if (Math.random() < dt * 14) fx.burst('wisp', at(A.tabby.pos, 0, 0.7, 0), 1, 0.15);
       }
       PR.flashLight.intensity = Math.max(0, PR.flashLight.intensity - dt * 10);
       if (cureT > 0) {

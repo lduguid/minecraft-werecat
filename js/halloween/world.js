@@ -228,7 +228,8 @@ window.WC = window.WC || {};
     return Object.assign(out, { COT, CH, FENCE, PATH, EYES, EYE_CAM, edgeZ });
   }
 
-  // more.decorate(tools, out) lets a later story add its own structures to this world.
+  // more.decorate(tools, out) lets a later story add its own structures to this world,
+  // and more.keepPlant(plant) lets it clear plants from a spot.
   HW.buildWorld = function (scene, more) {
     const world = WC.World.build(scene, {
       zMax: Z_MAX,
@@ -240,6 +241,7 @@ window.WC = window.WC || {};
         return out;
       },
       plant,
+      keepPlant: more && more.keepPlant,
       mesher: { canopyShade: 0.42, roofShade: 0.28 },
     });
     world.hw = world.extra;

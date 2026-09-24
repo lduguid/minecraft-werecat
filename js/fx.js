@@ -10,6 +10,7 @@
     leaf: { colors: ['#c8641e', '#a8421a', '#d8a030', '#7a3a14'], life: [3, 5], size: [0.09, 0.14], speed: 1.4, up: 0.1, gravity: 0.35, drag: 0.6 },
     witch: { colors: ['#b040ff', '#60ff60', '#e070ff'], life: [0.8, 1.5], size: [0.2, 0.35], speed: 0.4, up: 0.1, gravity: 0.3, drag: 1 },
     curse: { colors: ['#60ff60', '#3ad04a', '#9aff7a', '#b040ff'], life: [1.2, 2.2], size: [0.25, 0.5], speed: 1.0, up: 0.9, gravity: -0.15, drag: 1.2 },
+    wisp: { colors: ['#60ff60', '#3ad04a', '#b040ff'], life: [0.6, 1.2], size: [0.05, 0.1], speed: 0.25, up: 0.6, gravity: -0.3, drag: 1.5 },
     gold: { colors: ['#ffe066', '#fff2a8', '#ffc830'], life: [0.9, 1.6], size: [0.08, 0.16], speed: 1.4, up: 1.6, gravity: -0.4, drag: 1.4 },
     splinter: { colors: ['#8a6a3c', '#6b4f33', '#c8a070'], life: [0.5, 0.9], size: [0.06, 0.12], speed: 3, up: 1.2, gravity: 6, drag: 0.8 },
   };

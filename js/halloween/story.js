@@ -142,7 +142,7 @@ window.WC = window.WC || {};
           v.walkTo(-3.5, -38, 1.9);
         },
         cues: [
-          [0.6, () => fx.caption('It was Halloween, and a villager set off to visit his grandpa.')],
+          [0.6, () => fx.caption('It was Halloween, and Alex set off to visit his grandpa.')],
           [3.2, () => audio.villager('hmm', 0.8)],
         ],
         tick(lt) {
@@ -339,7 +339,7 @@ window.WC = window.WC || {};
           snd.bats(false);
         },
         cues: [
-          [0.5, () => fx.caption('Scared and worried, the villager hurried home to tell the others.')],
+          [0.5, () => fx.caption('Scared and worried, Alex hurried home to tell the others.')],
           [2.2, () => { snd.meow(0.85, 0.7, -0.4); snd.meow(1.1, 0.6, 0.4); snd.meow(0.7, 0.5, 0); }],
           [5.5, () => audio.heartbeat(0)],
         ],

@@ -62,6 +62,8 @@
 
   // ---------------------------------------------------------------- Feral cat (flashback)
   // opts: { fur, stripe, eyes, muzzle, glowEyes }
+  // a.setEvil(on, instant) turns it into a cursed cat: darkened fur, slanted eyes, a fanged snarl,
+  // horn-like splayed ears, raised hackles, stiff legs and a bristling tail.
   function cat(opts) {
     opts = opts || {};
     const a = new Actor('cat');
@@ -69,25 +71,38 @@
     const fur = opts.fur || '#8a8176';
     const stripe = opts.stripe || '#4e4840';
     const eyeColor = opts.eyes || '#9cff3a';
+    const muzzleColor = opts.muzzle || '#b0a89c';
     const vStripes = (ctx, w, h) => { ctx.fillStyle = stripe; for (let x = 1; x < w; x += 3) ctx.fillRect(x, 0, 1, h - 1); };
     const hStripes = (ctx, w, h) => { ctx.fillStyle = stripe; for (let y = 1; y < h; y += 3) ctx.fillRect(0, y, w, 1); };
     const body = pivot(r, 0, 8.5, 0);
     put(body, skinBox(4, 5, 14, { color: fur, left: vStripes, right: vStripes, top: hStripes }), 0, 0, 0);
+    const hackles = pivot(body, 0, 2.5, 0);
+    [-4.5, -2, 0.5, 3, 5].forEach((z, i) => put(hackles, skinBox(1, i % 2 ? 2 : 1, 1, { color: stripe }), 0, i % 2 ? 1 : 0.5, z));
+    hackles.visible = false;
     const head = pivot(r, 0, 10, 7);
     const eyes = pattern(['', '.g.g.'], { g: eyeColor });
-    put(head, skinBox(5, 4, 5, { color: fur, front: (ctx) => { eyes(ctx); }, top: hStripes, glow: { front: eyes } }), 0, 1.5, 2);
-    put(head, skinBox(3, 2, 1, { color: opts.muzzle || '#b0a89c', front: pattern(['.p.'], { p: '#e07a8a' }) }), 0, 0.5, 5);
+    const face = put(head, skinBox(5, 4, 5, { color: fur, front: (ctx) => { eyes(ctx); }, top: hStripes, glow: { front: eyes } }), 0, 1.5, 2);
+    const evilEyes = pattern(['g...g', 'gg.gg'], { g: eyeColor });
+    const evilFace = put(head, skinBox(5, 4, 5, { color: fur, front: (ctx) => { evilEyes(ctx); }, top: hStripes, glow: { front: evilEyes } }), 0, 1.5, 2);
+    evilFace.visible = false;
+    const muzzle = put(head, skinBox(3, 2, 1, { color: muzzleColor, front: pattern(['.p.'], { p: '#e07a8a' }) }), 0, 0.5, 5);
+    const snarl = put(head, skinBox(3, 2, 1, { color: muzzleColor, front: pattern(['.p.', 'kkk'], { p: '#e07a8a', k: '#2a0808' }) }), 0, 0.5, 5);
+    snarl.visible = false;
     const eyeSprites = [];
     if (opts.glowEyes) {
       [-1, 1].forEach((sx) => {
         const e = eyeSprite(eyeColor, 0.13);
         e.position.set(sx * P, 2 * P, 4.7 * P);
+        e.userData.side = sx;
         head.add(e);
         eyeSprites.push(e);
       });
     }
-    put(head, skinBox(1, 2, 1, { color: fur }), 1.5, 4, 1.5);
-    put(head, skinBox(1, 2, 1, { color: fur }), -1.5, 4, 1.5);
+    const ears = [1.5, -1.5].map((x) => {
+      const ep = pivot(head, x, 3, 1.5);
+      put(ep, skinBox(1, 2, 1, { color: fur }), 0, 1, 0);
+      return ep;
+    });
     const legs = [];
     [[1, 5], [-1, 5], [1, -5], [-1, -5]].forEach(([x, z]) => {
       const lp = pivot(r, x, 6, z);
@@ -96,36 +111,68 @@
     });
     const tail = pivot(r, 0, 10, -7);
     put(tail, skinBox(1, 1, 9, { color: fur, left: vStripes, right: vStripes }), 0, 0, -4.5);
+    const furMats = [];
+    r.traverse((o) => { if (o.isMesh) furMats.push(...[].concat(o.material)); });
+    const fangs = [-1, 1].map((sx) => {
+      const f = put(head, skinBox(1, 1, 1, { color: '#f2eee0' }), sx, -0.9, 5.2);
+      f.scale.set(0.6, 1, 0.6);
+      f.visible = false;
+      return f;
+    });
     Object.assign(a.parts, { head, legs, tail, body });
     a.stride = 6;
     a.sitK = 0;
+    a.evil = false;
+    a.evilK = 0;
     a.setEyes = (v) => eyeSprites.forEach((e) => { e.material.opacity = v; });
+    a.setEvil = (on, instant) => {
+      a.evil = on;
+      if (instant) a.evilK = on ? 1 : 0;
+    };
     a.anim = (dt, t) => {
       const k = Math.min(1, a.vel * 0.5) * 0.8;
       const s = Math.sin(a.phase) * k;
       const pounce = a.mode === 'pounce';
       const sit = a.mode === 'sit';
       approach(a, 'sitK', sit ? 1 : 0, 6, dt);
-      const q = a.sitK;
+      approach(a, 'evilK', a.evil ? 1 : 0, 3, dt);
+      const q = a.sitK, e = a.evilK;
+      const lift = 1.5 * e;
       legs[0].rotation.x = pounce ? -1.2 : s;
       legs[1].rotation.x = pounce ? -1.2 : -s;
       legs[2].rotation.x = pounce ? 1.0 : U.lerp(-s, -1.35, q);
       legs[3].rotation.x = pounce ? 1.0 : U.lerp(s, -1.35, q);
-      legs[2].position.y = legs[3].position.y = (6 - 3.5 * q) * P;
-      legs[0].position.y = legs[1].position.y = (6 + 3 * q) * P;
-      legs[0].scale.y = legs[1].scale.y = 1 + 0.5 * q;
-      body.position.y = (8.5 - 1.2 * q) * P;
+      legs[2].position.y = legs[3].position.y = (6 - 3.5 * q + lift) * P;
+      legs[0].position.y = legs[1].position.y = (6 + 3 * q + lift) * P;
+      legs[0].scale.y = legs[1].scale.y = 1 + 0.5 * q + lift / 6;
+      legs[2].scale.y = legs[3].scale.y = 1 + lift / 6;
+      body.position.y = (8.5 - 1.2 * q + lift) * P;
       body.position.z = -1.5 * q * P;
-      head.position.y = (10 + 2.3 * q) * P;
+      head.position.y = (10 + 2.3 * q + lift) * P;
       head.position.z = (7 - 3.8 * q) * P;
-      tail.position.y = (10 - 7 * q) * P;
+      tail.position.y = (10 - 7 * q + lift) * P;
       tail.position.z = (-7 - 0.5 * q) * P;
       const hiss = a.mode === 'hiss';
-      approach(tail.rotation, 'x', sit ? -0.15 : hiss ? 1.4 : 0.8, 6, dt);
-      tail.rotation.y = Math.sin(t * (hiss ? 9 : 2)) * 0.3;
+      approach(tail.rotation, 'x', U.lerp(sit ? -0.15 : hiss ? 1.4 : 0.8, 1.05, e), 6, dt);
+      tail.rotation.y = Math.sin(t * (hiss ? 9 : 2)) * 0.3 * (1 - 0.7 * e);
+      tail.scale.set(1 + 1.3 * e, 1 + 1.3 * e, 1);
       approach(body.rotation, 'x', sit ? -0.5 : hiss ? -0.15 : 0, 6, dt);
       head.rotation.y = a.headYaw;
       head.rotation.x = a.headPitch + (hiss ? -0.3 : 0);
+      ears.forEach((ep, i) => { ep.rotation.set(-0.45 * e, 0, (i ? 0.75 : -0.75) * e); });
+      hackles.visible = e > 0.02;
+      hackles.scale.y = e;
+      const cursed = e > 0.5;
+      face.visible = !cursed;
+      evilFace.visible = cursed;
+      snarl.visible = cursed && hiss;
+      muzzle.visible = !snarl.visible;
+      fangs.forEach((f) => { f.visible = cursed; });
+      furMats.forEach((m) => m.color.setRGB(1 - 0.55 * e, 1 - 0.58 * e, 1 - 0.5 * e));
+      eyeSprites.forEach((sp) => {
+        sp.scale.setScalar(0.13 + 0.03 * e);
+        sp.position.set(sp.userData.side * (1 + 0.6 * e) * P, (2 + 0.3 * e) * P, 4.7 * P);
+      });
     };
     return a.finish();
   }

@@ -43,6 +43,7 @@
   //   treeOk    (x, z) => bool, veto a scattered plains tree
   //   decorate  (tools) => extra, build additional structures
   //   plant     (x, z, h, r, rand) => plant | null | undefined (undefined = default plants)
+  //   keepPlant (plant) => bool, drop generated plants without changing where the others grow
   //   mesher    options passed to WC.Mesher.build
   function build(scene, opts) {
     opts = opts || {};
@@ -230,7 +231,8 @@
 
     // ---- Mesh it ----
     const atlas = WC.Tex.buildAtlas();
-    const { meshes, materials } = WC.Mesher.build(grid, atlas, plants, opts.mesher);
+    const kept = opts.keepPlant ? plants.filter(opts.keepPlant) : plants;
+    const { meshes, materials } = WC.Mesher.build(grid, atlas, kept, opts.mesher);
     Object.values(meshes).forEach((m) => scene.add(m));
 
     // ---- Lights: torches, lamp, window glows ----

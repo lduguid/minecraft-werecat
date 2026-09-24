@@ -85,6 +85,27 @@ window.WC = window.WC || {};
     s.connect(sg); sg.connect(A.out(1, 0.6));
   }
 
+  function whoosh() {
+    const t = A.ctx.currentTime + 0.01;
+    const n = A.noise(t, 0.3), bp = A.filter('bandpass', 2500, 1.2), g = A.gain(0.0001);
+    bp.frequency.exponentialRampToValueAtTime(500, t + 0.25);
+    A.env(g, t, 0.03, 0.5, 0.05, 0.15);
+    n.connect(bp); bp.connect(g); g.connect(A.out(1, 0.2));
+  }
+
+  // The witch, struck: a rising then falling screech.
+  function shriek() {
+    const t = A.ctx.currentTime + 0.01;
+    const o = A.osc('sawtooth', 700, t, 0.8);
+    o.frequency.exponentialRampToValueAtTime(1400, t + 0.12);
+    o.frequency.exponentialRampToValueAtTime(520, t + 0.7);
+    const vib = A.osc('sine', 28, t, 0.8), vg = A.gain(40);
+    vib.connect(vg); vg.connect(o.frequency);
+    const bp = A.filter('bandpass', 1800, 2.5), g = A.gain(0.0001);
+    A.env(g, t, 0.02, 0.35, 0.3, 0.35);
+    o.connect(bp); bp.connect(g); g.connect(A.out(1, 0.4));
+  }
+
   function crunch() {
     const t0 = A.ctx.currentTime + 0.01;
     for (let i = 0; i < 3; i++) {
@@ -137,6 +158,7 @@ window.WC = window.WC || {};
     },
     birds(on) { st.birds = on; },
     smash: safe(smash), slam: safe(slam), scrape: safe(scrape), fizz: safe(fizz), crunch: safe(crunch), cure: safe(cure),
+    whoosh: safe(whoosh), shriek: safe(shriek),
     update() {
       if (!ready()) return;
       const now = A.ctx.currentTime;

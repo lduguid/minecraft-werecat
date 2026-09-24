@@ -135,7 +135,7 @@
         },
         cues: [
           [0.3, () => A.villager.walkTo(S.x - 1.2, S.z - 0.8, 1.1)],
-          [0.8, () => fx.caption('Far from home, a villager wandered the grassy plains, gathering flowers...')],
+          [0.8, () => fx.caption('Far from home, a villager named Alex wandered the grassy plains, gathering flowers...')],
           [2.8, () => { A.villager.mode = 'pick'; }],
           [4.6, () => { A.villager.mode = 'idle'; A.villager.walkTo(S.x + 0.2, S.z - 2.2, 1.0); }],
           [6.4, () => { A.villager.mode = 'pick'; }],
@@ -428,7 +428,7 @@
           audio.drone(0.8, 1);
         },
         cues: [
-          [0.2, () => fx.caption('The villager knew that sound. Every villager did.')],
+          [0.2, () => fx.caption('Alex knew that sound. Every villager did.')],
           [0.5, () => A.villager.shake(4.5, 0.03)],
           [1.0, () => { dropFlower(); audio.heartbeat(95, 0.9); }],
           [1.3, () => { A.villager.mode = 'panic'; audio.villager('panic'); }],

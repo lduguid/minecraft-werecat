@@ -145,9 +145,12 @@ window.WC = window.WC || {};
   }
 
   let poppyTex = null;
-  function poppy() {
+  // glow (0..1) lets the flower's own colours show through the dark.
+  function poppy(glow) {
     poppyTex = poppyTex || WC.Tex.tileTexture('poppy');
-    return new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.55), new THREE.MeshLambertMaterial({ map: poppyTex, alphaTest: 0.5, side: THREE.DoubleSide }));
+    const mat = new THREE.MeshLambertMaterial({ map: poppyTex, alphaTest: 0.5, side: THREE.DoubleSide });
+    if (glow) Object.assign(mat, { emissive: new THREE.Color(0xffffff), emissiveMap: poppyTex, emissiveIntensity: glow });
+    return new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.55), mat);
   }
 
   // The lair's front door: plain oak that can be swapped for a claw-raked version.
