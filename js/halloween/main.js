@@ -45,7 +45,7 @@
     const bats = [];
     for (let i = 0; i < 8; i++) bats.push(HW.bat());
     const actors = {
-      villager: M.villager({ flower: true }),
+      villager: M.villager({ flower: true, child: true }),
       witch: HW.witch(),
       skeleton: M.skeleton(),
       spider: M.spider(),

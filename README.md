@@ -1,6 +1,6 @@
 # The Werecat
 
-A trilogy of short, Minecraft-style animated stories that run in your web browser. All three are set in the same blocky world and follow the same villager, Alex. They are listed here in the recommended watching order.
+A trilogy of short, Minecraft-style animated stories that run in your web browser. All three are set in the same blocky world and follow the same young villager, Alex. They are listed here in the recommended watching order.
 
 1. **The Werecat** (`index.html`). Caught far from home under a full moon, Alex hears a terrible sound, half howl and half meow, and runs for home.
 2. **Grandpa's House** (`halloween.html`) is a spooky Halloween prequel, set earlier that same day. Alex visits his grandpa's cottage at the edge of a dark forest and finds it deserted, apart from a lot of cats.
@@ -37,7 +37,7 @@ The same actions are available as buttons in the top-right corner while a story 
 
 ## The Werecat
 
-1. **Sunset.** Alex, a farmer villager in a straw hat, gathers flowers far from home.
+1. **Sunset.** Alex, a young villager in a straw hat, gathers flowers far from home.
 2. **Nightfall.** The sun slips away. His village is just a few tiny lights on the horizon.
 3. **The mobs.** Zombies, skeletons, spiders, a creeper and an enderman appear, but they just stand and stare at the full moon.
 4. **Silence.** The crickets stop singing.
@@ -87,10 +87,10 @@ New characters: the witch on foot in her cleric's hood, her black cat, a grandpa
 - **No build step.** Plain JavaScript files loaded with script tags, plus [Three.js](https://threejs.org/) r158 from jsDelivr (with an unpkg fallback).
 - **Procedural pixel art.** Every block, plant, mob skin, pumpkin face, potion, map, the sun and the square full moon are painted onto tiny canvases at startup.
 - **Voxel world.** Terrain, a terraced hill, oak trees and a small village with houses, a farm, torches and lit windows. Grandpa's House extends the same world south with a path, a cottage and a dark forest of dark oak, spruce and dead trees. The finale reuses that whole world and turns one village house into the witch's lair. The mesher only emits visible block faces and bakes Minecraft-style smooth-lighting ambient occlusion into vertex colours. The later films also darken the ground under the forest canopy and inside buildings.
-- **Blocky characters.** Every mob is built from textured boxes with pivots for heads, arms, legs, tails, wings and hats, and animated in code.
+- **Blocky characters.** Every mob is built from textured boxes with pivots for heads, arms, legs, tails, wings and hats, and animated in code. Alex is a Minecraft-style baby villager: half-size, with a big head and quick little steps, and he hops up one-block steps instead of walking into them.
 - **Synthesized sound.** All audio is generated live with the Web Audio API, including wind, crickets, gentle piano, a dread drone, mob noises, footsteps, a heartbeat and the werecat's howl. The howl layers distorted voices that glide through "mrrr - AAOOO - wwww" formants, with a trill, vibrato, a growl underneath and a long reverb. The prequel adds a howling wind, a creepy music-box lullaby, a witch's cackle, a creaking door, owls, bats, eerie meows, a growl and thunder. The finale adds a bubbling cauldron, smashing glass, a door slam, claw scrapes, a potion fizz, an apple crunch, the shimmer of the cure and morning birdsong.
 - **Cinematography.** A scripted timeline drives camera moves, captions, letterbox bars, screen shake, flashes, fades and the sepia flashbacks. In the prequel, a "mood" controller moves the sky, fog and light from grey-purple Halloween gloom to the golden sunset where The Werecat begins. In the finale, a daybreak controller takes the sky from The Werecat's full-moon night through a pink dawn to a bright morning, and dims the light indoors so the cauldron's green glow fills the lair.
-- **Shared engine.** All three stories use the same core files. Each later story only adds optional hooks to them, so the earlier films play exactly as they did before.
+- **Shared engine.** All three stories use the same core files, and each later story only adds optional hooks to them.
 
 ## Project layout
 
@@ -107,8 +107,8 @@ New characters: the witch on foot in her cleric's hood, her black cat, a grandpa
 | `js/mesher.js` | Block definitions, voxel mesher with ambient occlusion and optional canopy and roof shading, plant sprites |
 | `js/world.js` | Terrain, the werecat's hill, the village, trees, torches and lights, with hooks for extending the world |
 | `js/sky.js` | Sky gradient, stars, sun, moon, clouds, sunset-to-night lighting and fog |
-| `js/actor.js` | Textured-box builder and the shared `Actor` class (movement, head tracking, damage flash) |
-| `js/mobs.js` | Villager (including a sitting pose), zombie, skeleton, creeper, enderman |
+| `js/actor.js` | Textured-box builder and the shared `Actor` class (movement, hopping up steps, head tracking, damage flash) |
+| `js/mobs.js` | Villager (including a child version and a sitting pose), zombie, skeleton, creeper, enderman |
 | `js/creatures.js` | Spider, cats (with colour options, a sitting pose and fading eye glow) and the werecat |
 | `js/fx.js` | Particles (including autumn leaves, witch sparkles, curse smoke, gold sparkles and splinters), camera shake, captions, flash, fade and flashback overlays |
 | `js/audio.js` | Synthesized music, ambience and sound effects, plus the low-level synth helpers |

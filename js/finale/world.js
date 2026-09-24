@@ -17,8 +17,10 @@ window.WC = window.WC || {};
       },
       // Bare ground outside the lair door, and no other flowers in view of it,
       // so the poppy the werecat leaves there is the only one on screen.
+      // Also a clear view at dawn of Alex feeding the werecat.
       keepPlant: (p) => {
         if (p.x >= -9 && p.x <= -6 && p.z >= -56 && p.z <= -54) return false;
+        if (p.x >= -9 && p.x <= -6 && p.z >= -49 && p.z <= -46) return false;
         return !(FLOWERS.has(p.tile) && p.x >= -9 && p.x <= -1 && p.z >= -60 && p.z <= -51);
       },
     });

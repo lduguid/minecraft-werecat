@@ -57,6 +57,9 @@
     obj[prop] += (target - obj[prop]) * U.damp(rate, dt);
   }
 
+  const HOP_T = 0.45;    // seconds in the air
+  const HOP_CLEAR = 0.3; // how far the arc peaks above the step
+
   class Actor {
     constructor(type) {
       this.type = type;
@@ -68,6 +71,13 @@
       this.vel = 0;
       this.phase = 0;
       this.stride = 4.5;
+      this.stepScale = 1;
+      this.eyeHeight = 1.6;
+      this.hops = false;
+      this.hop = null;
+      this.lift = 0;
+      this.lastX = 0;
+      this.lastZ = 0;
       this.mode = 'idle';
       this.yaw = 0;
       this.targetYaw = null;
@@ -172,14 +182,18 @@
         if (this.snapNext) pos.y = gy;
         else pos.y += (gy - pos.y) * U.damp(gy > pos.y ? 18 : 10, dt);
       }
+      if (this.snapNext || !this.grounded || !world) this.hop = null;
+      this.lift = this.hops && world && this.grounded && !this.snapNext ? this.hopLift(dt, world) : 0;
+      this.lastX = pos.x;
+      this.lastZ = pos.z;
       this.snapNext = false;
-      this.phase += this.vel * dt * this.stride;
+      this.phase += this.vel * dt * this.stride * this.stepScale;
 
       // Head tracking
       let hy, hp;
       if (this.lookTarget) {
         const dx = this.lookTarget.x - pos.x, dz = this.lookTarget.z - pos.z;
-        const dy = this.lookTarget.y - (pos.y + 1.6);
+        const dy = this.lookTarget.y - (pos.y + this.eyeHeight);
         let rel = Math.atan2(dx, dz) - this.yaw;
         rel = Math.atan2(Math.sin(rel), Math.cos(rel));
         hy = U.clamp(rel, -1.3, 1.3);
@@ -208,8 +222,35 @@
         const a = this.shakeAmp;
         this.rig.position.set((Math.random() - 0.5) * a, (Math.random() - 0.5) * a * 0.5, (Math.random() - 0.5) * a);
       }
+      this.rig.position.y += this.lift;
 
       if (this.anim) this.anim(dt, t);
+    }
+
+    // Jump up one-block steps instead of walking into them. The arc is carried by the rig,
+    // so the root (which cameras follow) still climbs smoothly. Returns the rig's height above the root.
+    hopLift(dt, world) {
+      const pos = this.root.position;
+      const here = world.groundAt(pos.x, pos.z) + this.yOffset;
+      let h = this.hop;
+      if (!h) {
+        const mx = pos.x - this.lastX, mz = pos.z - this.lastZ, d = Math.hypot(mx, mz);
+        if (dt <= 0 || d < 1e-4) return 0;
+        const reach = (d / dt) * HOP_T * 0.5 + 0.12;
+        const top = world.groundAt(pos.x + (mx / d) * reach, pos.z + (mz / d) * reach) + this.yOffset;
+        if (top - here < 0.5 || top - here > 1.6) return 0;
+        const up = Math.sqrt(2 * (Math.max(0, top - pos.y) + HOP_CLEAR)), q = (up + Math.sqrt(2 * HOP_CLEAR)) / HOP_T;
+        h = this.hop = { t: 0, y0: pos.y, top, g: q * q, vy: q * up };
+      }
+      h.t += dt;
+      // Landed on the step: hold there until the root catches up. Missed it: keep falling back down.
+      const onTop = here >= h.top - 0.01;
+      const y = h.t >= HOP_T && onTop ? h.top : h.y0 + h.vy * h.t - 0.5 * h.g * h.t * h.t;
+      if ((h.t >= HOP_T && (onTop ? pos.y >= h.top - 0.02 : y <= pos.y)) || h.t > HOP_T + 1) {
+        this.hop = null;
+        return 0;
+      }
+      return Math.max(0, y - pos.y);
     }
   }
 

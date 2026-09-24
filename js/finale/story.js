@@ -254,8 +254,8 @@ window.WC = window.WC || {};
           [4.6, () => { setDoor(0, 16); snd.slam(1); fx.shake(0.35, 0.3); audio.chase(0, 1); }],
         ],
         tick(lt) {
-          if (lt < 3.3) cam(V(-2.2, 14.3, -56.4), at(v.pos, 0, 1.2, 0), 55);
-          else cam(V(-12.7, 15.3, -57.6), V(-10.2, 14.1, -55.5), 60, true);
+          if (lt < 3.3) cam(V(-2.2, 14.3, -56.4), at(v.pos, 0, 0.7, 0), 55);
+          else cam(V(-12.7, 15.3, -57.6), V(-10.2, 13.85, -55.5), 60, true);
         },
       },
       {
@@ -301,11 +301,11 @@ window.WC = window.WC || {};
           [9.2, () => fx.caption('He was safe. Or so he thought...', { scary: true })],
         ],
         tick(lt) {
-          if (lt < 3) cam(V(-12.4, 14.6, -56.3), at(v.pos, 0, 1.45, 0), 50, true);
+          if (lt < 3) cam(V(-12.4, 14.1, -56.3), at(v.pos, 0, 0.85, 0), 50, true);
           else {
             const d = U.ease.inOut(U.smoothstep(4.4, 6.0, lt));
             const zoom = U.ease.inOut(U.smoothstep(6.4, 10.5, lt));
-            cam(V(-8.95, 14.45, -55.2), at(wc.pos, 0, 2.0, 0).lerp(at(poppyRest.pos, 0, 0.3, 0), d), 55 - 12 * zoom);
+            cam(V(-8.95, 14.0, -55.2), at(wc.pos, 0, 2.0, 0).lerp(at(poppyRest.pos, 0, 0.3, 0), d), 55 - 12 * zoom);
           }
         },
       },
@@ -330,7 +330,7 @@ window.WC = window.WC || {};
           [10.8, () => { PR.tableApple.visible = false; hold('apple', true); }],
         ],
         tick(lt) {
-          if (lt < 4) cam(V(-10.3, 15.5, -56.6), at(CAULDRON, 0, 0.6, 0), 55, true);
+          if (lt < 4) cam(V(-10.0, 14.6, -57.6), V(-11.9, 13.7, -56.6), 55, true);
           else if (lt < 8) {
             const k = U.ease.inOut(U.clamp((lt - 4.3) / 3.2, 0, 1));
             cam(V(-10.5, 15.0, -56.8), V(-12.8, 14.6, -56.4).lerp(V(-10.55, 14.35, -54.03), k), 55, true);
@@ -389,7 +389,7 @@ window.WC = window.WC || {};
         ],
         tick(lt) {
           if (lt < 3.8) cam(V(-10.9, 13.9, -55.1), at(witchHead, 0, 0.3, 0), 55, true);
-          else cam(V(-10.35, 14.3, -57.65), at(HIDE, 0, 1.2, 0), 58, true);
+          else cam(V(-10.35, 14.3, -57.65), at(HIDE, 0, 0.75, 0), 58, true);
         },
       },
       // ---------------- Act 3: the rescue, both ways
@@ -506,7 +506,7 @@ window.WC = window.WC || {};
           [4.3, () => {
             hold('bottle', false);
             v.faceTowards(witch.pos.x, witch.pos.z);
-            throwBottle(0x5aff4a, at(v.pos, 0, 1.3, 0), at(witch.pos, 0, 1.7, 0), 0.35, () => {
+            throwBottle(0x5aff4a, at(v.pos, 0, 0.75, 0), at(witch.pos, 0, 1.7, 0), 0.35, () => {
               snd.smash(1.2);
               snd.fizz(1.2);
               fx.flash(0.5);
@@ -558,8 +558,8 @@ window.WC = window.WC || {};
           [10.6, () => audio.villager('hmm', 0.8)],
         ],
         tick(lt) {
-          if (lt < 7.6) cam(V(-11.8, 14.5, -49.3), V(-7.0, 13.8, -49.0), 50);
-          else cam(v.pos.clone().addScaledVector(fwd(v.yaw), 2.7).add(V(0, 1.45, -0.7)), at(v.pos, 0, 1.35, 0), 45);
+          if (lt < 7.6) cam(V(-7.0, 14.4, -45.5), V(-7.6, 13.6, -49.6), 50);
+          else cam(v.pos.clone().addScaledVector(fwd(v.yaw), 1.8).add(V(0, 0.95, -0.45)), at(v.pos, 0, 0.85, 0), 45);
         },
       },
       // ---------------- Epilogue: morning at Grandpa's
@@ -686,7 +686,7 @@ window.WC = window.WC || {};
       while (idx + 1 < beats.length && time >= beats[idx + 1].at) enterBeat(idx + 1);
       const b = beats[idx];
       const lt = time - b.at;
-      vHead.copy(v.pos).add(V(0, 1.6, 0));
+      vHead.copy(v.pos).add(V(0, v.eyeHeight, 0));
       witchHead.copy(witch.pos).add(V(0, 2.1, 0));
       (b.cues || []).forEach((c, k) => {
         if (!fired[k] && lt >= c[0]) { fired[k] = true; c[1](); }

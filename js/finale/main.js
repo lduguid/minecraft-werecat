@@ -41,7 +41,7 @@
     // ---- Cast ----
     const M = WC.Mobs;
     const black = { fur: '#1e1d22', stripe: '#141317', eyes: '#e8f040', muzzle: '#2e2c33', glowEyes: true };
-    const villager = M.villager({ flower: true });
+    const villager = M.villager({ flower: true, child: true });
     const werecat = M.werecat();
     const witch = HW.witch({ standing: true, hood: true, scale: 1.0 });
     const witchFly = HW.witch();

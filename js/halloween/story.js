@@ -147,7 +147,7 @@ window.WC = window.WC || {};
         ],
         tick(lt) {
           const k = U.ease.inOut(U.clamp(lt / 8, 0, 1));
-          cam(v.pos.clone().add(V(-5, 6, -7).lerp(V(-3, 2.3, -4.2), k)), at(v.pos, 0.5, 1.2, 4), 55);
+          cam(v.pos.clone().add(V(-4, 4.5, -5.5).lerp(V(-2, 1.5, -2.8), k)), at(v.pos, 0.3, 0.75, 3), 55);
         },
       },
       // 2. The long walk south
@@ -159,7 +159,7 @@ window.WC = window.WC || {};
           v.followPath(r, 2.1);
         },
         cues: [[0.4, () => fx.caption('Grandpa lived all alone, in a little cottage at the edge of the dark forest.')]],
-        tick() { cam(at(v.pos, -11, 6.5, -2), at(v.pos, 0, 1, 3), 55); },
+        tick() { cam(at(v.pos, -7.5, 4.5, -1.5), at(v.pos, 0, 0.6, 3), 55); },
       },
       // 3. The cottage in the fog
       {
@@ -284,7 +284,7 @@ window.WC = window.WC || {};
             const d = EYES.clone().sub(EYE_CAM).normalize();
             cam(EYE_CAM.clone().addScaledVector(d, U.lerp(0, 2.5, lt / 4)), EYES, 40);
           } else if (lt < 6) {
-            cam(v.pos.clone().addScaledVector(fwd(yawTo(v.pos, EYES)), 1.9).add(V(0, 1.65, 0)), at(v.pos, 0, 1.55, 0), 45);
+            cam(v.pos.clone().addScaledVector(fwd(yawTo(v.pos, EYES)), 1.3).add(V(0, 1.0, 0)), at(v.pos, 0, 0.95, 0), 45);
           } else {
             cam(EYE_CAM.clone().addScaledVector(EYES.clone().sub(EYE_CAM).normalize(), 1.5), EYES, 40);
           }
@@ -317,7 +317,7 @@ window.WC = window.WC || {};
           if (lt < 5.4) {
             cam(WITCH_CAM, WITCH_CAM.clone().addScaledVector(MOON_UP, 50), 24);
           } else {
-            cam(at(v.pos, 2.8, 1.8, -2.6), at(v.pos, 0, 1.3, 0), 55);
+            cam(at(v.pos, 1.9, 1.2, -1.8), at(v.pos, 0, 0.75, 0), 55);
           }
         },
       },
@@ -344,7 +344,7 @@ window.WC = window.WC || {};
           [5.5, () => audio.heartbeat(0)],
         ],
         tick(lt) {
-          if (lt < 4.5) cam(V(-5.2, CH + 2.7, 45), at(v.pos, 0, 1.2, 0), 55);
+          if (lt < 4.5) cam(V(-5.2, CH + 2.7, 45), at(v.pos, 0, 0.7, 0), 55);
           else cam(V(-7.5, CH + 2.2, 46.5), V(-8, CH + 1.8, 53), 55);
         },
       },
@@ -374,7 +374,7 @@ window.WC = window.WC || {};
           [7.8, () => { flower.visible = true; audio.villager('hmm', 0.7); }],
           [8.6, () => { v.mode = 'idle'; }],
         ],
-        tick() { cam(at(v.pos, 4.2, 1.9, 3.6), at(v.pos, -0.5, 1.2, -0.8), 50); },
+        tick() { cam(at(v.pos, 2.8, 1.25, 2.4), at(v.pos, -0.35, 0.75, -0.55), 50); },
       },
       // 11. Where "The Werecat" begins
       {
@@ -396,7 +396,7 @@ window.WC = window.WC || {};
         tick(lt) {
           if (lt < 4.4) {
             const k = U.ease.inOut(U.clamp(lt / 4.4, 0, 1));
-            cam(S.clone().add(V(13, 7.5, 15).lerp(V(8, 4.5, 9.5), k)), at(S, -1, 1, -1), 55);
+            cam(S.clone().add(V(8, 4.4, 9.4).lerp(V(4, 2.2, 4.7), k)), at(S, -0.6, 0.55, -1), U.lerp(48, 40, k));
           } else {
             const k = U.ease.inOut(U.clamp((lt - 4.4) / 5, 0, 1));
             cam(at(S, -5, 2.6, -7), at(HILL, 0, U.lerp(2, 6, k), 0), 50);
@@ -453,7 +453,7 @@ window.WC = window.WC || {};
       while (idx + 1 < beats.length && time >= beats[idx + 1].at) enterBeat(idx + 1);
       const b = beats[idx];
       const lt = time - b.at;
-      vHead.copy(v.pos).add(V(0, 1.6, 0));
+      vHead.copy(v.pos).add(V(0, v.eyeHeight, 0));
       (b.cues || []).forEach((c, k) => {
         if (!fired[k] && lt >= c[0]) { fired[k] = true; c[1](); }
       });

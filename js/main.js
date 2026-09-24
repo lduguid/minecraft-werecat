@@ -35,7 +35,7 @@
 
     const M = WC.Mobs;
     const actors = {
-      villager: M.villager({ flower: true }),
+      villager: M.villager({ flower: true, child: true }),
       villager2: M.villager({ robe: '#3f6b3a', hat: false }),
       werecat: M.werecat(),
       cat: M.cat(),
@@ -131,7 +131,9 @@
     // ---- Main loop ----
     function frame() {
       requestAnimationFrame(frame);
-      const dt = Math.min(0.05, clock.getDelta());
+      advance(Math.min(0.05, clock.getDelta()));
+    }
+    function advance(dt) {
       if (mode !== 'paused') {
         t += dt;
         if (mode === 'playing' || mode === 'ended') story.update(dt);
@@ -169,6 +171,15 @@
         setPaused(false);
         WC.debug.seek(sec);
         return new Promise((r) => setTimeout(() => { setPaused(true); r('at ' + story.time.toFixed(2)); }, ms || 700));
+      },
+      // Simulate `run` seconds from `sec` at 60 fps and draw, even when the tab is hidden.
+      step(sec, run) {
+        setPaused(false);
+        WC.debug.seek(sec);
+        for (let i = 0; i < Math.round((run || 1) * 60); i++) advance(1 / 60);
+        setPaused(true);
+        advance(0);
+        return 'at ' + story.time.toFixed(2);
       },
     };
     if (params.has('t')) {

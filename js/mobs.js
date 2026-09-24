@@ -23,10 +23,13 @@
   }
 
   // ---------------------------------------------------------------- Villager
+  // opts: { robe, hat, flower, child }. A child is a Minecraft-style baby villager:
+  // half-size body, three-quarter-size head, and quicker little steps.
   function villager(opts) {
     opts = opts || {};
     const robe = opts.robe || '#7a5638';
     const a = new Actor('villager');
+    a.hops = true;
     const r = a.rig;
     const skin = '#bd8b72';
 
@@ -72,12 +75,20 @@
       arms.add(flower);
     }
 
+    if (opts.child) {
+      r.scale.setScalar(0.5);
+      head.scale.setScalar(1.5);
+      a.eyeHeight = 1.0;
+      a.stepScale = 1.8;
+    }
+    const size = r.scale.y;
+
     Object.assign(a.parts, { legL, legR, head, arms, flower });
     a.anim = (dt, t) => {
       const running = a.vel > 2.5;
       walkLegs(a, running ? 1.1 : 0.7);
       let lean = 0, bob = 0;
-      if (running) { lean = 0.15; bob = Math.abs(Math.sin(a.phase)) * 0.06; }
+      if (running) { lean = 0.15; bob = Math.abs(Math.sin(a.phase)) * 0.06 * size; }
       if (a.mode === 'pick') lean = 0.5;
       approach(a.rig.rotation, 'x', lean, 6, dt);
       a.rig.position.y += bob;
@@ -86,7 +97,7 @@
       if (a.mode === 'pick') hp = 0.6;
       if (a.mode === 'sit' || a.mode === 'sitUp') {
         legL.rotation.x = legR.rotation.x = -1.45;
-        a.rig.position.y -= 0.34;
+        a.rig.position.y -= 0.34 * size;
         if (a.mode === 'sit') hp = 0.32 + Math.sin(t * 0.9) * 0.07;
       }
       head.rotation.y = hy;

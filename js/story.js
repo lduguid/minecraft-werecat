@@ -135,14 +135,14 @@
         },
         cues: [
           [0.3, () => A.villager.walkTo(S.x - 1.2, S.z - 0.8, 1.1)],
-          [0.8, () => fx.caption('Far from home, a villager named Alex wandered the grassy plains, gathering flowers...')],
+          [0.8, () => fx.caption('Far from home, a young villager named Alex wandered the grassy plains, gathering flowers...')],
           [2.8, () => { A.villager.mode = 'pick'; }],
           [4.6, () => { A.villager.mode = 'idle'; A.villager.walkTo(S.x + 0.2, S.z - 2.2, 1.0); }],
           [6.4, () => { A.villager.mode = 'pick'; }],
         ],
         tick(lt) {
           const k = U.ease.inOut(U.clamp(lt / 8, 0, 1));
-          cam(S.clone().add(V(13, 7.5, 15).lerp(V(8, 4.5, 9.5), k)), at(S, -1, 1, -1), 55);
+          cam(S.clone().add(V(8, 4.4, 9.4).lerp(V(4, 2.2, 4.7), k)), at(S, -0.6, 0.55, -1), U.lerp(48, 40, k));
         },
       },
       // 2. The sun slips away
@@ -158,7 +158,7 @@
         tick(lt) {
           const v = A.villager;
           const k = U.ease.inOut(U.clamp(lt / 7, 0, 1));
-          cam(off(v, U.lerp(3.4, 2.4, k), U.lerp(1.5, 1.2, k), U.lerp(2.2, 3.3, k)), at(v.pos, -0.6, 1.5, -0.8), 50);
+          cam(off(v, U.lerp(2.1, 1.5, k), U.lerp(0.95, 0.8, k), U.lerp(1.35, 2.0, k)), at(v.pos, -0.35, 0.9, -0.5), 50);
         },
       },
       // 3. Home is a few tiny lights on the horizon
@@ -180,7 +180,7 @@
         tick(lt) {
           const v = A.villager;
           const k = U.ease.inOut(U.clamp(lt / 7, 0, 1));
-          const pos = v.pos.clone().addScaledVector(fwd(v.yaw), -U.lerp(3.2, 2.4, k)).addScaledVector(side(v.yaw), 0.9).add(V(0, 2.1, 0));
+          const pos = v.pos.clone().addScaledVector(fwd(v.yaw), -U.lerp(2.1, 1.5, k)).addScaledVector(side(v.yaw), 0.55).add(V(0, 1.3, 0));
           cam(pos, at(VC, 0, 3, 0), U.lerp(50, 36, k));
         },
       },
@@ -189,7 +189,7 @@
         at: 22,
         enter() {
           nightMobs(['skeletonA', 'zombieA', 'spiderA']);
-          show(A.villager, S, YAW_NORTH);
+          show(A.villager, S, YAW_NORTH).visible = false;
         },
         cues: [
           [0.3, () => fx.caption('Night had fallen. And with the night... came the monsters.')],
@@ -199,8 +199,8 @@
         ],
         tick(lt) {
           const yaw = -2.25 + 0.3 * lt;
-          const base = at(S, 0.8, 2.3, -0.8);
-          cam(base, base.clone().add(V(Math.sin(yaw) * 12, -1.0, Math.cos(yaw) * 12)), 55);
+          const base = at(S, 0, 1.05, 0);
+          cam(base, base.clone().add(V(Math.sin(yaw) * 12, -0.4, Math.cos(yaw) * 12)), 55);
         },
       },
       // 5. Under the full moon, they are strangely still
@@ -238,7 +238,7 @@
         ],
         tick(lt) {
           const v = A.villager;
-          cam(v.pos.clone().addScaledVector(fwd(YAW_SE), U.lerp(2.3, 1.8, lt / 4)).add(V(0, 1.7, 0)), at(v.pos, 0, 1.55, 0), 45);
+          cam(v.pos.clone().addScaledVector(fwd(YAW_SE), U.lerp(1.55, 1.2, lt / 4)).add(V(0, 1.0, 0)), at(v.pos, 0, 0.95, 0), 45);
         },
       },
       // 7. THE HOWL - a silhouette against the full moon
@@ -442,8 +442,8 @@
         ],
         tick(lt) {
           const v = A.villager;
-          if (lt < 3) cam(v.pos.clone().addScaledVector(fwd(YAW_SE), U.lerp(2.0, 1.6, lt / 3)).add(V(0, 1.65, 0)), at(v.pos, 0, 1.55, 0), 45);
-          else cam(off(v, 3.5, 1.9, 1.5), at(v.pos, 0, 1.2, -1), 55);
+          if (lt < 3) cam(v.pos.clone().addScaledVector(fwd(YAW_SE), U.lerp(1.35, 1.1, lt / 3)).add(V(0, 1.0, 0)), at(v.pos, 0, 0.95, 0), 45);
+          else cam(off(v, 2.3, 1.2, 1.0), at(v.pos, 0, 0.75, -0.7), 55);
         },
       },
       // 11. The chase
@@ -481,10 +481,10 @@
         tick(lt, dt) {
           chase(lt, dt);
           const v = A.villager;
-          if (lt < 4.5) cam(off(v, 6, 1.8, 0.5), at(v.pos, 0, 1.1, -1.5), 60);
-          else if (lt < 8.5) cam(off(v, 1.0, 2.2, 4.5), at(v.pos, -0.3, 1.8, -14), 60);
-          else if (lt < 12.5) cam(off(v, -1.2, 1.5, -6.5), at(v.pos, 0.8, 1.7, 8), 62);
-          else cam(at(spots.creeper, 1.5, 1.0, -3.5), at(v.pos, 0, 1.0, 0), 60);
+          if (lt < 4.5) cam(off(v, 4.5, 1.3, 0.4), at(v.pos, 0, 0.65, -1.2), 60);
+          else if (lt < 8.5) cam(off(v, 0.8, 1.4, 3.4), at(v.pos, -0.3, 1.0, -14), 60);
+          else if (lt < 12.5) cam(off(v, -1.0, 2.2, -5.5), at(v.pos, 0.6, 0.9, 5), 60);
+          else cam(at(spots.creeper, 1.5, 1.0, -3.5), at(v.pos, 0, 0.7, 0), 60);
         },
       },
       // 12. Cliffhanger
